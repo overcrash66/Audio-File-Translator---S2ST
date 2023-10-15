@@ -55,7 +55,7 @@ Select an MP3 File:
 	Click the "Browse" button to choose an MP3 file.
 	You can use 'segment_1.mp3' as example (with a spanish voice)
 
-    - If you are using AudioFileTranslator-S2ST.py: select ouput language as needed
+- If you are using AudioFileTranslator-S2ST.py: select ouput language as needed. (FYI default language is English)
 
 Translate Speech:
 	Click the "Translate" button to translate the speech to English.
