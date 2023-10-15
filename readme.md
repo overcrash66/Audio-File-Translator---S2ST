@@ -65,7 +65,6 @@ Save Translated Audio:
 ## Configuration
 
 - You can customize the translation model and other settings by modifying the script.
-- 
 
 ## Logging
 
