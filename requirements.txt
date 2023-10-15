@@ -1,0 +1,6 @@
+gtts==2.2.2
+pygame==2.0.1
+transformers==4.11.2
+torch==1.10.0
+torchaudio==0.10.0
+pillow==8.3.2
