@@ -174,13 +174,17 @@ class CustomTranslator:
             # print("Translated Text:", transcription)
             
             # Use SpeechRecognizer for translation (modify as needed)
-            translator = SentenceTranslator(src="en", dst=target_language)
-            translated_text = translator(transcription)
+            if target_language != "en":
+                translator = SentenceTranslator(src="en", dst=target_language)
+                translated_text = translator(transcription)
 
-            # Generate final audio output from translated text
-            self.generate_audio(translated_text, output_path, target_language)
-
-            logging.info(f"Processing successful. Translated text: {translated_text}")
+                # Generate final audio output from translated text
+                self.generate_audio(translated_text, output_path, target_language)
+                logging.info(f"Processing successful. Translated text: {translated_text}")
+            else:
+                self.generate_audio(transcription, output_path, target_language)
+                logging.info(f"Processing successful. Translated text: {transcription}")
+            
            
         except Exception as e:
             logging.error(f"Error transcribing audio: {e}")
