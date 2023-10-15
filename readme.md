@@ -8,19 +8,19 @@ Audio file translator, Speech To Speech Translator is a simple tool that allows 
 ## Features
 
 - Translate the content of an Audio file from any language to:
-    English: en
-    Spanish: es
-    French: fr
-    German: de
-    Japanese: ja
-    Korean: ko
-    Turkish: tr
-    Arabic: ar
-    Russian: ru
-    Hebrew: he
-    Hindi: hi
-    Italian: it
-    Portuguese: pt
+    - English: en
+    - Spanish: es
+    - French: fr
+    - German: de
+    - Japanese: ja
+    - Korean: ko
+    - Turkish: tr
+    - Arabic: ar
+    - Russian: ru
+    - Hebrew: he
+    - Hindi: hi
+    - Italian: it
+    - Portuguese: pt
 
 - User-friendly GUI for easy interaction.
 
