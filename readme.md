@@ -1,11 +1,27 @@
-# Audio file any language to english translator Speech To Speech Translator
+# Audio file translator - Speech To Speech Translator
 
-Audio file any language to english translator Speech To Speech Translator is a simple tool that allows you to translate the content of an Audio file using OpenAI's Whisper ASR and TTS models.
+Audio file translator, Speech To Speech Translator is a simple tool that allows you to translate the content of an Audio file using:
+ - OpenAI's Whisper ASR,
+ - Google Speech Recognizer (not used in Audio_file_any_language_to_english_translator-SpeechToSpeechTranslator.py)
+ - TTS models.
 
 ## Features
 
-- Translate the content of an Audio file from any language to english.
-- Uses OpenAI's Whisper models for audio processing and translation.
+- Translate the content of an Audio file from any language to:
+    English: en
+    Spanish: es
+    French: fr
+    German: de
+    Japanese: ja
+    Korean: ko
+    Turkish: tr
+    Arabic: ar
+    Russian: ru
+    Hebrew: he
+    Hindi: hi
+    Italian: it
+    Portuguese: pt
+
 - User-friendly GUI for easy interaction.
 
 ## Requirements
@@ -29,9 +45,17 @@ Run the Script:
 python Audio_file_any_language_to_english_translator-SpeechToSpeechTranslator.py
 ```
 
+OR
+
+```bash
+python AudioFileTranslator-S2ST.py
+```
+
 Select an MP3 File:
 	Click the "Browse" button to choose an MP3 file.
 	You can use 'segment_1.mp3' as example (with a spanish voice)
+
+If you are using AudioFileTranslator-S2ST.py: select ouput language as needed
 
 Translate Speech:
 	Click the "Translate" button to translate the speech to English.
@@ -43,6 +67,8 @@ Save Translated Audio:
 ## GUI Preview
 
 ![Audio_file_any_language_to_english_translator-SpeechToSpeechTranslator GUI](Screenshot.png)
+
+![AudioFileTranslator-S2ST GUI](Screenshot2.png)
 
 ## Configuration
 
