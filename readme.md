@@ -4,7 +4,7 @@ Audio_file_any_language_to_english_translator-SpeechToSpeechTranslator is a simp
 
 ## Features
 
-- Translate the content of an Audio file from one language to english.
+- Translate the content of an Audio file from any language to english.
 - Uses OpenAI's Whisper models for audio processing and translation.
 - User-friendly GUI for easy interaction.
 

@@ -54,8 +54,8 @@ class CustomTranslator:
         
 class TranslatorGUI:
     def __init__(self, master):
-        master.title("Audio file from any language to english translator - Speech to speech translator")
-        master.geometry("480x640")  # Increased height for progress bar and label
+        master.title("Audio file from any language to english translator - S2S translator")
+        master.geometry("540x580")  # Increased height for progress bar and label
 
         # Load and display banner image
         banner_image = Image.open("Flag_of_Palestine.svg.png")
@@ -69,7 +69,7 @@ class TranslatorGUI:
         center_frame = ttk.Frame(master)
         center_frame.pack(expand=True)
 
-        self.label_input = Label(center_frame, text="Select MP3 File:")
+        self.label_input = Label(center_frame, text="Select Audio File:")
         self.label_input.pack(side="top", pady=10)
 
         self.browse_button = Button(center_frame, text="Browse", command=self.browse)
@@ -96,7 +96,7 @@ class TranslatorGUI:
         self.audio_path = ""
     
     def browse(self):
-        file_path = filedialog.askopenfilename(filetypes=[("MP3 Files", "*.*")])
+        file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.*")])
         print(f"Selected file: {file_path}")
         self.audio_path = file_path
         
