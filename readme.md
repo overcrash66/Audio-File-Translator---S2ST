@@ -1,6 +1,6 @@
-# MP3 Translator
+# Audio file any language to english translator Speech To Speech Translator
 
-Audio_file_any_language_to_english_translator-SpeechToSpeechTranslator is a simple tool that allows you to translate the content of an Audio file using OpenAI's Whisper ASR and TTS models.
+Audio file any language to english translator Speech To Speech Translator is a simple tool that allows you to translate the content of an Audio file using OpenAI's Whisper ASR and TTS models.
 
 ## Features
 
