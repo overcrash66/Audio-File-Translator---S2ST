@@ -1,9 +1,9 @@
 # Audio file translator - Speech To Speech Translator
 
-Audio file translator, Speech To Speech Translator is a simple tool that allows you to translate the content of an Audio file using:
+Audio file translator, Speech To Speech Translator is a tool that allows you to translate the content of an Audio file using:
  - S2T: OpenAI's Whisper multilingual [whisper-large-v2](https://huggingface.co/openai/whisper-large-v2),
  - T2T: Google Speech Recognizer
- - TTS: python gtts
+ - TTS: Python gtts
 
 ## Features
 
@@ -30,6 +30,7 @@ Make sure you have the following dependencies installed:
 
 - Python 3.x
 - Pip (Python package installer)
+- [FFmpeg](https://ffmpeg.org/download.html)
 
 Install the required Python packages using:
 

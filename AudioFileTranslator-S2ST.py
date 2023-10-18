@@ -1,4 +1,31 @@
-from tkinter import Tk, Label, Button, filedialog, StringVar, OptionMenu, messagebox, ttk, DoubleVar
+"""
+###############################################################################################################################
+#                                        Audio File Translator - S2ST                                                         #
+###############################################################################################################################
+# File:         AudioFileTranslator-S2ST.py
+# Author:       WAEL SAHLI
+# Date:         October 17, 2023
+#  
+# Description:   Audio file translator, Speech To Speech Translator is a tool 
+#                that allows you to translate the content of an Audio file using:
+#                 - S2T: OpenAI's Whisper multilingual
+#                 - T2T: Google Speech Recognizer
+#                 - TTS: python gtts
+#
+#
+# Version:      1.1
+#
+# Change Log:
+# October 14, 2023     1.0 - Initial version
+# October 17, 2023     1.1 - Better memory management
+#                          - Add support for large audio files translation
+#                          - Add FFMpeg to split large audio files and avoid out of memory errors and bad translation quality
+#                          - Add audio to mp3 conversion tool
+#                          - Fix freezing issue with stop play Translated audio file 
+#                          - Update GUI style
+##############################################################################################################################
+"""
+from tkinter import Tk, Label, Button, filedialog, StringVar, OptionMenu, messagebox, ttk, DoubleVar, Menu
 import threading
 from PIL import Image, ImageTk
 import pygame
@@ -8,55 +35,11 @@ import torchaudio
 import logging
 import os
 import requests
-
-class SpeechRecognizer:
-    def __init__(self, language="en", rate=48000, retries=3, api_key="AIzaSyBOti4mM-6x9WDnZIjIeyEU21OpBXqWBgw", timeout=30,
-                 error_messages_callback=None):
-        self.language = language
-        self.rate = rate
-        self.api_key = api_key
-        self.retries = retries
-        self.timeout = timeout
-        self.error_messages_callback = error_messages_callback
-
-    def __call__(self, data):
-        try:
-            for i in range(self.retries):
-                url = f"http://www.google.com/speech-api/v2/recognize?client=chromium&lang={self.language}&key={self.api_key}"
-                headers = {"Content-Type": "audio/x-flac rate=%d" % self.rate}
-
-                try:
-                    resp = requests.post(url, data=data, headers=headers, timeout=self.timeout)
-                    # print(resp.text)
-                except requests.exceptions.ConnectionError:
-                    try:
-                        resp = httpx.post(url, data=data, headers=headers, timeout=self.timeout)
-                    except httpx.exceptions.NetworkError:
-                        continue
-
-                for line in resp.content.decode('utf-8').split("\n"):
-                    try:
-                        line = json.loads(line)
-                        line = line['result'][0]['alternative'][0]['transcript']
-                        return line[:1].upper() + line[1:]
-                    except:
-                        # no result
-                        continue
-
-        except KeyboardInterrupt:
-            if self.error_messages_callback:
-                self.error_messages_callback("Cancelling all tasks")
-            else:
-                print("Cancelling all tasks")
-            return
-
-        except Exception as e:
-            if self.error_messages_callback:
-                self.error_messages_callback(e)
-            else:
-                print(e)
-            return
-
+import math
+from pydub import AudioSegment
+from pydub.utils import mediainfo
+import subprocess
+import time
 
 class SentenceTranslator:
     def __init__(self, src, dst, patience=-1, timeout=30, error_messages_callback=None):
@@ -144,14 +127,34 @@ class SentenceTranslator:
 
 class CustomTranslator:
     def __init__(self):
-        self.processor = WhisperProcessor.from_pretrained("openai/whisper-large-v2")
-        self.model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-large-v2")
+        self.processor = None
+        self.model = None
         self.target_language = StringVar()
         self.target_language.set("en")  # Default target language
 
+    def load_model(self):
+        # Load the model if it hasn't been loaded
+        if self.processor is None:    
+            self.processor = WhisperProcessor.from_pretrained("openai/whisper-large-v2")
+            
+        if self.model is None:
+            self.model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-large-v2")
         
-    def transcribe_audio(self, input_path, target_language, output_path):
+
+    def unload_model(self):
+        # Unload the model if it has been loaded
+        if self.processor is not None:
+            del self.processor
+            self.processor = None
+        
+        if self.model is not None:
+            del self.model
+            self.model = None  
+        
+    def process_audio_chunk(self, input_path, target_language, chunk_idx, output_path):
         try:
+            self.load_model()
+            
             # Load input audio file using torchaudio
             input_waveform, input_sampling_rate = torchaudio.load(input_path)
             
@@ -170,8 +173,8 @@ class CustomTranslator:
 
             # Decode token ids to text
             transcription = self.processor.batch_decode(predicted_ids, skip_special_tokens=True)[0]
-
-            # print("Translated Text:", transcription)
+            
+            Translation_chunk_output_path = f"{output_path}_Translation_chunk{chunk_idx + 1}.mp3"
             
             # Use SpeechRecognizer for translation (modify as needed)
             if target_language != "en":
@@ -179,34 +182,67 @@ class CustomTranslator:
                 translated_text = translator(transcription)
 
                 # Generate final audio output from translated text
-                self.generate_audio(translated_text, output_path, target_language)
+                self.generate_audio(translated_text, Translation_chunk_output_path, target_language)
                 logging.info(f"Processing successful. Translated text: {translated_text}")
             else:
-                self.generate_audio(transcription, output_path, target_language)
+                self.generate_audio(transcription, Translation_chunk_output_path, target_language)
                 logging.info(f"Processing successful. Translated text: {transcription}")
-            
-           
+
+            # Log success
+            logging.info(f"Translation successful for {input_path}. Translated text: {transcription}")
+
         except Exception as e:
-            logging.error(f"Error transcribing audio: {e}")
-            raise
+            # Log errors
+            logging.error(f"Error processing audio: {e}")
+            raise  # Re-raise the exception
+        
+        finally:
+            # Ensure model is unloaded and memory is cleared even if an exception occurs
+            self.unload_model()    
 
     def generate_audio(self, text, output_path, target_language):
         tts = gTTS(text, lang=target_language)
         tts.save(output_path)
 
-    def play_audio(self, audio_path):
+    def play_audio(self, audio_path): # disabled for now
         pygame.mixer.init()
         pygame.mixer.music.load(audio_path)
         pygame.mixer.music.play()
 
     def stop_audio(self):
-        pygame.mixer.music.stop()
+        if not pygame.mixer.get_init():
+            pygame.mixer.init()
+        try:    
+            pygame.mixer.music.stop()
+        except:
+            pass
+            
 
 class TranslatorGUI:
     def __init__(self, master):
         master.title("Audio File Translator - S2ST")
-        master.geometry("640x680")
+        master.geometry("600x610")
+        master.maxsize(700, 700)
+        master.attributes('-fullscreen', False)
+        self.label = Label(master, text="Audio File Translator - S2ST", font=("Arial", 12, "bold"), fg="red", pady=18)
+        self.label.pack()
+        self.master = master
+        
+        # Menu Bar
+        menubar = Menu(master)
+        master.config(menu=menubar)
 
+        # File Menu
+        file_menu = Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="File", menu=file_menu)
+        file_menu.add_command(label="Convert Audio file to MP3", command=self.Convert_Audio_Files)
+        file_menu.add_command(label="Exit", command=master.destroy)
+
+        # Help Menu
+        help_menu = Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Help", menu=help_menu)
+        help_menu.add_command(label="About", command=self.show_about)
+        
         banner_image = Image.open("Flag_of_Palestine.svg.png")
         banner_image = banner_image.resize((480, 200))
         banner_photo = ImageTk.PhotoImage(banner_image)
@@ -231,36 +267,63 @@ class TranslatorGUI:
         self.label_target_language.pack(side="top", pady=5)
 
         languages = ["en", "es", "fr", "de", "ja", "ko", "tr", "ar", "ru", "he", "hi", "it", "pt"]
-        self.translator = CustomTranslator()
-        self.target_language_dropdown = OptionMenu(center_frame, self.translator.target_language, *languages)
+        self.translator_instance = CustomTranslator()  # Use the same instance for translation
+        self.target_language_dropdown = OptionMenu(center_frame, self.translator_instance.target_language, *languages)
         self.target_language_dropdown.pack(side="top", pady=5)
-
-        # Language selection drop-down menu for gTTS language
-        # self.label_tts_language = Label(center_frame, text="Select gTTS Language:")
-        # self.label_tts_language.pack(side="top", pady=5)
-
-        # self.tts_language_dropdown = OptionMenu(center_frame, self.translator.tts_language, *languages)
-        # self.tts_language_dropdown.pack(side="top", pady=5)
 
         self.translate_button = Button(center_frame, text="Translate", command=self.translate)
         self.translate_button.pack(side="top", pady=10)
-
-        # self.play_button = Button(center_frame, text="Play Translated File", command=self.play_translated)
-        # self.play_button.pack(side="top", pady=5)
 
         self.stop_button = Button(center_frame, text="Stop Playing Translated File", command=self.stop_playing)
         self.stop_button.pack(side="top", pady=5)
 
         self.progress_bar = ttk.Progressbar(center_frame, variable=DoubleVar(), mode='indeterminate')
-        self.progress_bar.pack(side="top", pady=5)
+        self.progress_bar.pack(side="top", pady=10)
 
         self.label_status = Label(center_frame, text="")
         self.label_status.pack(side="top", pady=5)
-
+        
         self.audio_path = ""
+    
+    def Convert_Audio_Files(self):
+        def is_mp3(file_path):
+            try:
+                result = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=format_name', '-of', 'default=noprint_wrappers=1:nokey=1', file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                return result.stdout.strip() == 'mp3'
+            except Exception as e:
+                print(f"Error checking file format: {e}")
+                messagebox.showinfo("Error", f"Error checking file format: {e}")
+                return False
 
+        def convert_to_mp3(input_file, output_file):
+            try:
+                subprocess.run(['ffmpeg', '-i', input_file, '-codec:a', 'libmp3lame', output_file], check=True)
+                print(f"Conversion successful: {output_file}")
+                messagebox.showinfo("Info", f"Conversion successful: {output_file}")
+            except subprocess.CalledProcessError as e:
+                print(f"Error converting to MP3: {e}")
+                messagebox.showinfo("Error", f"Error converting to MP3: {e}")
+
+        def Start(file_title):
+            input_file = file_title
+            output_file = f"{file_title}-Converted.mp3"
+
+            if not is_mp3(input_file):
+                print(f"The input file is not a valid MP3. Converting to MP3...")
+                convert_to_mp3(input_file, output_file)
+            else:
+                print("The input file is already an MP3.")
+                messagebox.showinfo("Error", "The input file is already an MP3.")
+        
+        Input_file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.*")])
+        file_title = Input_file_path.split("/")[-1]
+        Start(file_title)
+    
+    def show_about(self):
+        messagebox.showinfo("About", "Audio File Translator - S2ST v1.1\n\nCreated by Wael Sahli")
+    
     def browse(self):
-        file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.*")])
+        file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.mp3")])
         print(f"Selected file: {file_path}")
         self.audio_path = file_path
 
@@ -277,33 +340,111 @@ class TranslatorGUI:
                 self.label_status.config(text="Translation in progress...")
 
     def run_translation(self, output_path):
-        translator_instance = CustomTranslator()
-        translator_instance.transcribe_audio(self.audio_path, self.translator.target_language.get(), output_path)
+        try:
+            input_file = self.audio_path
+            # Get the duration of the input audio file
+            ffprobe_cmd = f'ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "{input_file}"'
+            input_duration = float(subprocess.check_output(ffprobe_cmd, shell=True))
+            
+            # Set the maximum duration for each chunk (30 seconds in this case)
+            max_chunk_duration = 30
 
-        PlayOutputFile = CustomTranslator()
-        PlayOutputFile.play_audio(output_path)
+            # Calculate the number of chunks required
+            num_chunks = int(input_duration / max_chunk_duration)
+            print("num_chunks: "+str(num_chunks))
+            chunk_files = []  # List to store individual chunk files
+            Translation_chunk_files = []
+            
+            # Split the audio file into chunks and process each chunk
+            for chunk_idx in range(num_chunks):
+                
+                # Calculate start and end times for each chunk
+                start_time = chunk_idx * max_chunk_duration
+                end_time = min((chunk_idx + 1) * max_chunk_duration, input_duration)
 
-        self.progress_bar.stop()
-        self.label_status.config(text="Translation complete!")
+                # Use a consistent naming pattern for chunk files
+                chunk_output_path = f"{output_path}_chunk{chunk_idx + 1}.mp3"
 
-        messagebox.showinfo("Success", f"Translation saved successfully at:\n{output_path}")
+                # Split the audio file into a chunk
+                self.split_audio_chunk(self.audio_path, chunk_output_path, start_time, end_time)
+                
+                # Process the audio chunk using the translator instance
+                self.translator_instance.process_audio_chunk(chunk_output_path, self.translator_instance.target_language.get(),chunk_idx, output_path)
+                chunk_files.append(chunk_output_path)
+                
+                Translation_chunk_output_path = f"{output_path}_Translation_chunk{chunk_idx + 1}.mp3"
+                Translation_chunk_files.append(Translation_chunk_output_path)
+                
+            # Merge individual chunk files into the final output file
+            final_output_path = f"{output_path}"
+            self.merge_audio_files(Translation_chunk_files, final_output_path)
 
-    def play_translated(self):
-        if self.audio_path:
-            output_path = "temp_translated_output.mp3"
-            translator_instance = CustomTranslator()
-            translator_instance.transcribe_audio(self.audio_path, self.translator.target_language.get(), output_path)
-            translator_instance.play_audio(output_path)
+            # Play the final merged audio file
+            self.translator_instance.play_audio(final_output_path)
+
+            # Cleanup: Delete individual chunk files
+            self.delete_chunk_files(chunk_files)
+            self.delete_chunk_files(Translation_chunk_files)
+
+            self.progress_bar.stop()
+            self.label_status.config(text="Translation complete!")
+
+            messagebox.showinfo("Success", f"Translation saved successfully at:\n{final_output_path}")
+
+        except Exception as e:
+            logging.error(f"Error during translation: {e}")
+            raise
+
+    # Function to split audio into a chunk using ffmpeg
+    def split_audio_chunk(self, input_path, output_path, start_time, end_time):
+        ffmpeg_cmd = f'ffmpeg -i "{input_path}" -ss {start_time} -to {end_time} -c copy "{output_path}"'
+        subprocess.call(ffmpeg_cmd, shell=True)
+
+    def get_audio_duration(self, file_path):
+        audio_info = mediainfo(file_path)
+        duration_ms_str = audio_info.get("duration", "0")
+        duration_ms = float(duration_ms_str)
+        duration_seconds = duration_ms / 1000
+        return duration_seconds
+
+    def merge_audio_files(self, input_files, output_file):
+        merged_audio = AudioSegment.silent(duration=0)
+        # print("Merge started")
+        for input_file in input_files:
+            try:
+                # Load the chunk audio
+                chunk_audio = AudioSegment.from_file(input_file, format="mp3")
+
+                # Append the chunk audio to the merged audio
+                merged_audio += chunk_audio
+            except FileNotFoundError as e:
+                logging.warning(f"Error merging audio file {input_file}: {e}")
+            except Exception as e:
+                logging.error(f"Error merging audio file {input_file}: {e}")
+
+        # Export the merged audio to the final output file
+        try:
+            merged_audio.export(output_file, format="mp3")
+        except Exception as e:
+            logging.error(f"Error exporting merged audio: {e}")
+
+    def delete_chunk_files(self, files):
+        for file in files:
+            try:
+                os.remove(file)
+            except FileNotFoundError as e:
+                logging.warning(f"Error deleting file {file}: {e}")
+            except Exception as e:
+                logging.error(f"Error deleting file {file}: {e}")
 
     def stop_playing(self):
-        translator_instance = CustomTranslator()
-        translator_instance.stop_audio()
+        self.translator_instance.stop_audio()
 
-# Initialize pygame mixer
-pygame.mixer.init()
-
-# Example usage
-if __name__ == "__main__":
+# Main function to run the GUI
+def run_gui():
     root = Tk()
     app = TranslatorGUI(root)
     root.mainloop()
+
+if __name__ == "__main__":
+    run_gui()
