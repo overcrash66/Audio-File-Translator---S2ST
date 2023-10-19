@@ -29,20 +29,12 @@ Audio file translator, Speech To Speech Translator is a tool that allows you to 
 
    - FFMpeg is utilized to split large audio files, preventing out-of-memory errors and enhancing translation quality.
 
-6. MP4 to MP3 Converter
-
-   - A tool to convert MP4 files to MP3 format.
-
-7. YouTube Video Translation
-
-   - Translate audio content from YouTube videos to different languages.
-
-8. GUI Improvements
+6. GUI Improvements
 
    - Updated GUI style for a more user-friendly experience.
    - Stop button to halt the playback of translated audio files.
 
-9. Version History
+7. Version History
 
   - v1.0: Initial version.
   - v1.1: Improved memory management, support for large audio files, FFMpeg integration, audio-to-MP3 conversion, and GUI updates.
