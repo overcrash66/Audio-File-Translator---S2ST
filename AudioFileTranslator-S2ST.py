@@ -50,7 +50,7 @@ def YouTubeDownloader():
     new_window.attributes('-fullscreen', False)
     def download():
         url = url_entry.get()
-        format_selected = selected_format.get()
+        format_selected = "mp4"
 
         if not url:
             messagebox.showerror("Error", "Please enter a valid YouTube URL.")
@@ -60,12 +60,8 @@ def YouTubeDownloader():
             yt = YouTube(url)
             video_title = yt.title
 
-            if format_selected == "mp3":
-                output_path = f"{video_title}.mp3"
-                subprocess.run(["ffmpeg", "-i", yt.streams.filter(only_audio=True).first().download(), "-vn", "-acodec", "libmp3lame", output_path])
-            elif format_selected == "mp4":
-                output_path = f"{video_title}.mp4"
-                subprocess.run(["ffmpeg", "-i", yt.streams.filter(file_extension='mp4').first().download(), output_path])
+            output_path = f"{video_title}.mp4"
+            subprocess.run(["ffmpeg", "-i", yt.streams.filter(file_extension='mp4').first().download(), output_path])
 
             messagebox.showinfo("Success", f"Download complete!\nFile saved as {output_path}")
 
@@ -77,16 +73,6 @@ def YouTubeDownloader():
 
     url_entry = Entry(new_window, width=40)
     url_entry.grid(row=0, column=1, padx=10, pady=10)
-
-    format_label = Label(new_window, text="Output Format:")
-    format_label.grid(row=1, column=0, padx=10, pady=10)
-
-    formats = ["mp3", "mp4"]
-    selected_format = StringVar(new_window)
-    selected_format.set(formats[0])  # default format
-
-    format_menu = OptionMenu(new_window, selected_format, *formats)
-    format_menu.grid(row=1, column=1, padx=10, pady=10)
 
     download_button = Button(new_window, text="Download", command=download)
     download_button.grid(row=2, column=0, columnspan=2, pady=10)
