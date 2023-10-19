@@ -7,22 +7,46 @@ Audio file translator, Speech To Speech Translator is a tool that allows you to 
 
 ## Features
 
-- Translate the content of an Audio file from any language to:
-    - English: en
-    - Spanish: es
-    - French: fr
-    - German: de
-    - Japanese: ja
-    - Korean: ko
-    - Turkish: tr
-    - Arabic: ar
-    - Russian: ru
-    - Hebrew: he
-    - Hindi: hi
-    - Italian: it
-    - Portuguese: pt
+1. Multi-Language Support
 
-- User-friendly GUI for easy interaction.
+The translator supports various target languages, including English, Spanish, French, German, Japanese, Korean, Turkish, Arabic, Russian, Hebrew, Hindi, Italian, and Portuguese.
+
+2. YouTube Downloader
+
+Integrated YouTube downloader for downloading audio from YouTube videos. Users can choose between MP3 and MP4 formats.
+
+3. Audio Conversion Tools
+
+    Convert Audio to MP3: Converts audio files to the MP3 format.
+    Extract Audio from Video: Extracts audio from video files and saves it as an MP3 file.
+
+4. Memory Management Improvements
+
+    Improved memory management for better performance, especially with large audio files.
+    Added support for translating large audio files without running out of memory.
+
+5. FFMpeg Integration
+
+    FFMpeg is utilized to split large audio files, preventing out-of-memory errors and enhancing translation quality.
+
+6. MP4 to MP3 Converter
+
+A tool to convert MP4 files to MP3 format.
+
+7. YouTube Video Translation
+
+Translate audio content from YouTube videos to different languages.
+
+8. GUI Improvements
+
+    Updated GUI style for a more user-friendly experience.
+    Stop button to halt the playback of translated audio files.
+
+9. Version History
+
+    v1.0: Initial version.
+    v1.1: Improved memory management, support for large audio files, FFMpeg integration, audio-to-MP3 conversion, and GUI updates.
+    v1.2: Fixed audio-to-MP3 conversion, added MP4 to MP3 converter, and introduced YouTube downloader.
 
 ## Requirements
 
@@ -32,31 +56,56 @@ Make sure you have the following dependencies installed:
 - Pip (Python package installer)
 - [FFmpeg](https://ffmpeg.org/download.html)
 
-Install the required Python packages using:
+
+## Dependencies
+
+pygame: Used for audio playback.
+transformers: OpenAI's Whisper for speech-to-text translation.
+gtts: Google Text-to-Speech for text-to-speech conversion.
+torchaudio: Audio processing library.
+pydub: Audio processing library.
+pytube: YouTube video download library.
+PIL: Python Imaging Library for image processing.
+
+## Usage
+
+1- Clone the repository:
+```bash
+git clone https://github.com/overcrash66/Audio-File-Translator---S2ST.git
+```
+
+2- Install the required Python packages using:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Usage
-
-Run the Script:
+3- Run the Script:
 
 ```bash
 python AudioFileTranslator-S2ST.py
 ```
 
-Select an Audio File:
-	Click the "Browse" button to choose an Audio file.
-	You can use 'segment_1.mp3' as example (with a spanish voice)
+1- File Menu:
+- Convert Audio file to MP3
+- Extract audio from Video
+- YouTube Downloader
+- Exit
 
-Select ouput language as needed. (FYI default language is English)
+2- Help Menu:
+- About
 
-Translate Speech:
-	Click the "Translate" button to translate the speech to the language that you choose.
+3- Select Audio File:
+- Browse to choose the input audio file.
 
-Save Translated Audio:
-	Choose a save location using the "Save" dialog.
+4- Select Target Language:
+- Choose the target language from the dropdown menu.
+
+5- Translate:
+- Click the "Translate" button to start the translation process.
+
+6- Stop Playing Translated File:
+- Click the "Stop Playing Translated File" button to stop audio playback.
 
 
 ## GUI Preview

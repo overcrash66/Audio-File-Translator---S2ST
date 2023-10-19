@@ -1,6 +1,7 @@
 pygame==2.0.1
-transformers==4.10.3
-gtts==2.2.3
-torchaudio==0.10.3
+transformers==4.10.0
+gtts==2.2.2
+torchaudio==0.10.0
 Pillow==8.3.2
 pydub==0.25.1
+pytube==10.8.5

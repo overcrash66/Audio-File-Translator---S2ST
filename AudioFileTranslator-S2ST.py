@@ -4,7 +4,7 @@
 ###############################################################################################################################
 # File:         AudioFileTranslator-S2ST.py
 # Author:       WAEL SAHLI
-# Date:         October 17, 2023
+# Date:         October 18, 2023
 #  
 # Description:   Audio file translator, Speech To Speech Translator is a tool 
 #                that allows you to translate the content of an Audio file using:
@@ -23,9 +23,10 @@
 #                          - Add audio to mp3 conversion tool
 #                          - Fix freezing issue with stop play Translated audio file 
 #                          - Update GUI style
+# October 18, 2023     1.2 - Fix audio to mp3 conversion + Add MP4 to mp3 converter + Add youtube downloader
 ##############################################################################################################################
 """
-from tkinter import Tk, Label, Button, filedialog, StringVar, OptionMenu, messagebox, ttk, DoubleVar, Menu
+from tkinter import Tk, Label, Button, filedialog, StringVar, OptionMenu, messagebox, ttk, DoubleVar, Menu, Entry
 import threading
 from PIL import Image, ImageTk
 import pygame
@@ -37,10 +38,60 @@ import os
 import requests
 import math
 from pydub import AudioSegment
+from pytube import YouTube
 from pydub.utils import mediainfo
 import subprocess
 import time
 
+def YouTubeDownloader():
+    new_window = Tk()
+    new_window.title("YouTube Downloader")
+    new_window.resizable(False, False)
+    new_window.attributes('-fullscreen', False)
+    def download():
+        url = url_entry.get()
+        format_selected = selected_format.get()
+
+        if not url:
+            messagebox.showerror("Error", "Please enter a valid YouTube URL.")
+            return
+
+        try:
+            yt = YouTube(url)
+            video_title = yt.title
+
+            if format_selected == "mp3":
+                output_path = f"{video_title}.mp3"
+                subprocess.run(["ffmpeg", "-i", yt.streams.filter(only_audio=True).first().download(), "-vn", "-acodec", "libmp3lame", output_path])
+            elif format_selected == "mp4":
+                output_path = f"{video_title}.mp4"
+                subprocess.run(["ffmpeg", "-i", yt.streams.filter(file_extension='mp4').first().download(), output_path])
+
+            messagebox.showinfo("Success", f"Download complete!\nFile saved as {output_path}")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred: {str(e)}")
+    
+    url_label = Label(new_window, text="YouTube URL:")
+    url_label.grid(row=0, column=0, padx=10, pady=10)
+
+    url_entry = Entry(new_window, width=40)
+    url_entry.grid(row=0, column=1, padx=10, pady=10)
+
+    format_label = Label(new_window, text="Output Format:")
+    format_label.grid(row=1, column=0, padx=10, pady=10)
+
+    formats = ["mp3", "mp4"]
+    selected_format = StringVar(new_window)
+    selected_format.set(formats[0])  # default format
+
+    format_menu = OptionMenu(new_window, selected_format, *formats)
+    format_menu.grid(row=1, column=1, padx=10, pady=10)
+
+    download_button = Button(new_window, text="Download", command=download)
+    download_button.grid(row=2, column=0, columnspan=2, pady=10)
+    new_window.mainloop()
+    
 class SentenceTranslator:
     def __init__(self, src, dst, patience=-1, timeout=30, error_messages_callback=None):
         self.src = src
@@ -236,6 +287,9 @@ class TranslatorGUI:
         file_menu = Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=file_menu)
         file_menu.add_command(label="Convert Audio file to MP3", command=self.Convert_Audio_Files)
+        file_menu.add_command(label="Extract audio from Video", command=self.extract_audio)
+        
+        file_menu.add_command(label="Youtube Downloader", command=YouTubeDownloader)
         file_menu.add_command(label="Exit", command=master.destroy)
 
         # Help Menu
@@ -285,6 +339,29 @@ class TranslatorGUI:
         
         self.audio_path = ""
     
+    def extract_audio(self):
+        input_video = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4")])
+        input_video_file = input_video.split("/")[-1]
+        input_video_file = str(input_video_file).replace('.mp4','')
+        output_audio = f"{input_video_file}.mp3"
+        
+        command = [
+            'ffmpeg',
+            '-i', input_video,
+            '-vn',  # Disable video recording
+            '-ac', '2',  # Set the number of audio channels to 2
+            '-ar', '44100',  # Set the audio sample rate to 44100 Hz
+            '-ab', '192k',  # Set the audio bitrate to 192 kbps
+            '-f', 'mp3',  # Set the output format to mp3
+            output_audio
+        ]
+
+        # Run the command
+        subprocess.run(command)
+        
+        print(f"Conversion successful: {output_audio}")
+        messagebox.showinfo("Info", f"Conversion successful: {output_audio}")
+        
     def Convert_Audio_Files(self):
         def is_mp3(file_path):
             try:
@@ -304,8 +381,9 @@ class TranslatorGUI:
                 print(f"Error converting to MP3: {e}")
                 messagebox.showinfo("Error", f"Error converting to MP3: {e}")
 
-        def Start(file_title):
-            input_file = file_title
+        def Start(Input_file_path):
+            input_file = Input_file_path
+            file_title = Input_file_path.split("/")[-1]
             output_file = f"{file_title}-Converted.mp3"
 
             if not is_mp3(input_file):
@@ -316,11 +394,12 @@ class TranslatorGUI:
                 messagebox.showinfo("Error", "The input file is already an MP3.")
         
         Input_file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.*")])
-        file_title = Input_file_path.split("/")[-1]
-        Start(file_title)
+        
+        if Input_file_path != '':
+            Start(Input_file_path)
     
     def show_about(self):
-        messagebox.showinfo("About", "Audio File Translator - S2ST v1.1\n\nCreated by Wael Sahli")
+        messagebox.showinfo("About", "Audio File Translator - S2ST v1.2\n\nCreated by Wael Sahli")
     
     def browse(self):
         file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.mp3")])
