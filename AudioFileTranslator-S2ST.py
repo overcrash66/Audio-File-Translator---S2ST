@@ -12,8 +12,7 @@
 #                 - T2T: Google Speech Recognizer
 #                 - TTS: python gtts
 #
-#
-# Version:      1.1
+# Version:      1.3
 #
 # Change Log:
 # October 14, 2023     1.0 - Initial version
@@ -24,6 +23,7 @@
 #                          - Fix freezing issue with stop play Translated audio file 
 #                          - Update GUI style
 # October 18, 2023     1.2 - Fix audio to mp3 conversion + Add MP4 to mp3 converter + Add youtube downloader
+# October 19, 2023     1.3 - Minor GUI updates, fix extract audio from video exception
 ##############################################################################################################################
 """
 from tkinter import Tk, Label, Button, filedialog, StringVar, OptionMenu, messagebox, ttk, DoubleVar, Menu, Entry
@@ -48,6 +48,7 @@ def YouTubeDownloader():
     new_window.title("YouTube Downloader")
     new_window.resizable(False, False)
     new_window.attributes('-fullscreen', False)
+    new_window.attributes("-topmost", True)
     def download():
         url = url_entry.get()
         format_selected = "mp4"
@@ -238,7 +239,7 @@ class CustomTranslator:
             self.unload_model()    
 
     def generate_audio(self, text, output_path, target_language):
-        tts = gTTS(text, lang=target_language)
+        tts = gTTS(text, lang=target_language, slow=False)
         tts.save(output_path)
 
     def play_audio(self, audio_path): # disabled for now
@@ -258,12 +259,11 @@ class CustomTranslator:
 class TranslatorGUI:
     def __init__(self, master):
         master.title("Audio File Translator - S2ST")
-        master.geometry("600x610")
+        master.geometry("500x580")
         master.maxsize(700, 700)
         master.attributes('-fullscreen', False)
         self.label = Label(master, text="Audio File Translator - S2ST", font=("Arial", 12, "bold"), fg="red", pady=18)
         self.label.pack()
-        self.master = master
         
         # Menu Bar
         menubar = Menu(master)
@@ -284,7 +284,7 @@ class TranslatorGUI:
         help_menu.add_command(label="About", command=self.show_about)
         
         banner_image = Image.open("Flag_of_Palestine.svg.png")
-        banner_image = banner_image.resize((480, 200))
+        banner_image = banner_image.resize((200, 100))
         banner_photo = ImageTk.PhotoImage(banner_image)
         banner_label = Label(master, image=banner_photo)
         banner_label.image = banner_photo
@@ -310,7 +310,7 @@ class TranslatorGUI:
         self.translator_instance = CustomTranslator()  # Use the same instance for translation
         self.target_language_dropdown = OptionMenu(center_frame, self.translator_instance.target_language, *languages)
         self.target_language_dropdown.pack(side="top", pady=5)
-
+        
         self.translate_button = Button(center_frame, text="Translate", command=self.translate)
         self.translate_button.pack(side="top", pady=10)
 
@@ -327,26 +327,27 @@ class TranslatorGUI:
     
     def extract_audio(self):
         input_video = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4")])
-        input_video_file = input_video.split("/")[-1]
-        input_video_file = str(input_video_file).replace('.mp4','')
-        output_audio = f"{input_video_file}.mp3"
-        
-        command = [
-            'ffmpeg',
-            '-i', input_video,
-            '-vn',  # Disable video recording
-            '-ac', '2',  # Set the number of audio channels to 2
-            '-ar', '44100',  # Set the audio sample rate to 44100 Hz
-            '-ab', '192k',  # Set the audio bitrate to 192 kbps
-            '-f', 'mp3',  # Set the output format to mp3
-            output_audio
-        ]
+        if input_video != '':
+            input_video_file = input_video.split("/")[-1]
+            input_video_file = str(input_video_file).replace('.mp4','')
+            output_audio = f"{input_video_file}.mp3"
+            
+            command = [
+                'ffmpeg',
+                '-i', input_video,
+                '-vn',  # Disable video recording
+                '-ac', '2',  # Set the number of audio channels to 2
+                '-ar', '44100',  # Set the audio sample rate to 44100 Hz
+                '-ab', '192k',  # Set the audio bitrate to 192 kbps
+                '-f', 'mp3',  # Set the output format to mp3
+                output_audio
+            ]
 
-        # Run the command
-        subprocess.run(command)
-        
-        print(f"Conversion successful: {output_audio}")
-        messagebox.showinfo("Info", f"Conversion successful: {output_audio}")
+            # Run the command
+            subprocess.run(command)
+            
+            print(f"Conversion successful: {output_audio}")
+            messagebox.showinfo("Info", f"Conversion successful: {output_audio}")
         
     def Convert_Audio_Files(self):
         def is_mp3(file_path):
@@ -385,7 +386,7 @@ class TranslatorGUI:
             Start(Input_file_path)
     
     def show_about(self):
-        messagebox.showinfo("About", "Audio File Translator - S2ST v1.2\n\nCreated by Wael Sahli")
+        messagebox.showinfo("About", "Audio File Translator - S2ST v1.3\n\nCreated by Wael Sahli")
     
     def browse(self):
         file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.mp3")])
