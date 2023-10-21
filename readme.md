@@ -110,10 +110,6 @@ python AudioFileTranslator-S2ST.py
 
 - You can customize the translation model and other settings by modifying the script.
 
-## Logging
-
-- The script logs translation results and errors to a log file named log.txt.
-
 ## License
 
 This project is licensed under the [MIT License](https://opensource.org/licenses/MIT) - see the [LICENSE](LICENSE) file for details.
