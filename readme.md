@@ -106,6 +106,9 @@ python AudioFileTranslator-S2ST.py
 
 ![AudioFileTranslator-S2ST GUI](Screenshot2.png)
 
+
+[![Watch the video](https://img.youtube.com/vi/4xMDHoUazjc/0.jpg)](https://www.youtube.com/watch?v=4xMDHoUazjc)
+
 ## Configuration
 
 - You can customize the translation model and other settings by modifying the script.
