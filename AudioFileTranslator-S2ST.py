@@ -319,9 +319,12 @@ class TranslatorGUI:
 
 		languages = ["en", "es", "fr", "de", "ja", "ko", "tr", "ar", "ru", "he", "hi", "it", "pt"]
 
-		self.translator_instance = customtkinter.StringVar()  # Use the same instance for translation
-		self.target_language_dropdown = customtkinter.CTkOptionMenu(master,values=languages)
+		self.translator_instance = CustomTranslator() # Use the same instance for translation
+		self.stringvarlanguage = customtkinter.StringVar()
+		self.target_language_dropdown = customtkinter.CTkOptionMenu(master,variable=self.stringvarlanguage,
+															   values=languages)
 		self.target_language_dropdown.pack(side="top", pady=5)
+		self.target_language_dropdown.set(languages[0])
 		
 		self.translate_button = customtkinter.CTkButton(master, text="Translate", command=self.translate)
 		self.translate_button.pack(side="top", pady=10)
@@ -408,7 +411,7 @@ class TranslatorGUI:
 
 		file_title = file_path.split("/")[-1]
 		if file_title != "":
-			self.label_file_title.config(text=f"Selected File Title: {file_title}")
+			self.label_file_title.configure(text=f"Selected File Title: {file_title}")
 
 	def translate(self):
 		if self.audio_path:
@@ -417,7 +420,7 @@ class TranslatorGUI:
 				translation_thread = threading.Thread(target=self.run_translation, args=(output_path,))
 				translation_thread.start()
 				self.progress_bar.start()
-				self.label_status.config(text="Translation in progress...")
+				self.label_status.configure(text="Translation in progress...")
 
 	def run_translation(self, output_path):
 		try:
@@ -449,7 +452,11 @@ class TranslatorGUI:
 				self.split_audio_chunk(self.audio_path, chunk_output_path, start_time, end_time)
 				
 				# Process the audio chunk using the translator instance
-				self.translator_instance.process_audio_chunk(chunk_output_path, self.translator_instance.target_language.get(),chunk_idx, output_path)
+				# print(self.target_language_dropdown.get())
+
+				self.translator_instance.process_audio_chunk(chunk_output_path,
+															 self.target_language_dropdown.get(),
+															 chunk_idx, output_path)
 				chunk_files.append(chunk_output_path)
 				
 				Translation_chunk_output_path = f"{output_path}_Translation_chunk{chunk_idx + 1}.mp3"
@@ -467,7 +474,7 @@ class TranslatorGUI:
 			self.delete_chunk_files(Translation_chunk_files)
 
 			self.progress_bar.stop()
-			self.label_status.config(text="Translation complete!")
+			self.label_status.configure(text="Translation complete!")
 
 			messagebox.showinfo("Success", f"Translation saved successfully at:\n{final_output_path}")
 
