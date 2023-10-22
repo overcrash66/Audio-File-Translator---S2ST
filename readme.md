@@ -104,7 +104,8 @@ python AudioFileTranslator-S2ST.py
 
 ## GUI Preview
 
-![Redesigned](https://github.com/7gxycn08/Audio-File-Translator---S2ST/assets/121936658/a7beead3-88fe-43d3-994e-c3335c2e0680)
+
+![Redesigned (Custom)](https://github.com/7gxycn08/Audio-File-Translator---S2ST/assets/121936658/a1822ee5-0de1-423b-b50c-32eeada797fb)
 
 
 ## Demo Video with installation steps:
