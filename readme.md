@@ -49,6 +49,7 @@ Make sure you have the following dependencies installed:
 - Python 3.x
 - Pip (Python package installer)
 - [FFmpeg](https://ffmpeg.org/download.html)
+- [CTkMenuBar](https://github.com/Akascape/CTkMenuBar/archive/refs/heads/main.zip)
 
 
 ## Dependencies
