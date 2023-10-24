@@ -40,7 +40,8 @@ Audio file translator, Speech To Speech Translator is a tool that allows you to 
   - v1.1: Improved memory management, support for large audio files, FFMpeg integration, audio-to-MP3 conversion, and GUI updates.
   - v1.2: Fixed audio-to-MP3 conversion, added MP4 to MP3 converter, and introduced YouTube downloader.
   - v1.3: Minor GUI updates, fix extract audio from video exception.
-  - v1.4 - add missing Flag image, fix exception with Torchaudio backend not being able to handle the specified URI and format.
+  - v1.4 - Add missing Flag image, fix exception with Torchaudio backend not being able to handle the specified URI and format.
+  - v1.5 - 7gxycn08 GUI updates
 
 ## Requirements
 
@@ -61,6 +62,9 @@ Make sure you have the following dependencies installed:
 - pydub: Audio processing library.
 - pytube: YouTube video download library.
 - PIL: Python Imaging Library for image processing.
+- Customtkinter
+- httpx
+- CTkMenuBar
 
 ## Usage
 

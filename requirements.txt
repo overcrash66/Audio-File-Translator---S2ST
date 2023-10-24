@@ -7,3 +7,4 @@ pydub
 pytube
 librosa
 customtkinter
+httpx

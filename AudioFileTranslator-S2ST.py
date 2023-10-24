@@ -4,15 +4,14 @@
 ###############################################################################################################################
 # File:			AudioFileTranslator-S2ST.py
 # Author:		WAEL SAHLI
-# Date:			October 18, 2023
-#  
+#
 # Description:	 Audio file translator, Speech To Speech Translator is a tool 
 #				 that allows you to translate the content of an Audio file using:
 #				  - S2T: OpenAI's Whisper multilingual
 #				  - T2T: Google Speech Recognizer
 #				  - TTS: python gtts
 #
-# Version:		1.4
+# Version:		1.5
 #
 # Change Log:
 # October 14, 2023	   1.0 - Initial version
@@ -25,6 +24,7 @@
 # October 18, 2023	   1.2 - Fix audio to mp3 conversion + Add MP4 to mp3 converter + Add youtube downloader
 # October 19, 2023	   1.3 - Minor GUI updates, fix extract audio from video exception
 # October 20, 2023	   1.4 - add missing Flag image, fix exception with Torchaudio backend not being able to handle the specified URI and format
+# October 23, 2023	   1.5 - 7gxycn08 GUI updates
 ##############################################################################################################################
 """
 from tkinter import Tk, Label, Button, filedialog, StringVar, OptionMenu, messagebox, ttk, DoubleVar, Menu, Entry
@@ -49,7 +49,7 @@ import customtkinter
 import httpx
 from CTkMenuBar import * #Addon Downloaded from #https://github.com/Akascape/CTkMenuBar
 
-customtkinter.set_appearance_mode("System")  # Modes: system (default), light, dark
+customtkinter.set_appearance_mode("System")	 # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 def YouTubeDownloader():
 	new_window = customtkinter.CTk()
@@ -402,7 +402,7 @@ class TranslatorGUI:
 			Start(Input_file_path)
 	
 	def show_about(self):
-		messagebox.showinfo("About", "Audio File Translator - S2ST v1.4\n\nCreated by Wael Sahli")
+		messagebox.showinfo("About", "Audio File Translator - S2ST v1.5\n\nCreated by Wael Sahli\n\nSpecial Thanks TO: 7gxycn08 for GUI updates")
 	
 	def browse(self):
 		file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.mp3")])
