@@ -49,6 +49,7 @@ Make sure you have the following dependencies installed:
 - Python 3.x
 - Pip (Python package installer)
 - [FFmpeg](https://ffmpeg.org/download.html)
+- [CTkMenuBar](https://github.com/Akascape/CTkMenuBar/archive/refs/heads/main.zip) #Need to install it manually In venv.
 
 
 ## Dependencies
@@ -104,7 +105,8 @@ python AudioFileTranslator-S2ST.py
 
 ## GUI Preview
 
-![AudioFileTranslator-S2ST GUI](Screenshot2.png)
+
+![Redesigned (Custom)](https://github.com/7gxycn08/Audio-File-Translator---S2ST/assets/121936658/a1822ee5-0de1-423b-b50c-32eeada797fb)
 
 
 ## Demo Video with installation steps:

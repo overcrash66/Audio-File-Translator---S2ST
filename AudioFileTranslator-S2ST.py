@@ -45,9 +45,15 @@ import subprocess
 import time
 import librosa
 import torch
+import customtkinter
+import httpx
+from CTkMenuBar import * #Addon Downloaded from #https://github.com/Akascape/CTkMenuBar
 
+customtkinter.set_appearance_mode("System")  # Modes: system (default), light, dark
+customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 def YouTubeDownloader():
-	new_window = Tk()
+	new_window = customtkinter.CTk()
+	new_window.iconbitmap("Flag.ico")
 	new_window.title("YouTube Downloader")
 	new_window.resizable(False, False)
 	new_window.attributes('-fullscreen', False)
@@ -72,13 +78,13 @@ def YouTubeDownloader():
 		except Exception as e:
 			messagebox.showerror("Error", f"An error occurred: {str(e)}")
 	
-	url_label = Label(new_window, text="YouTube URL:")
+	url_label = customtkinter.CTkLabel(new_window, text="YouTube URL:")
 	url_label.grid(row=0, column=0, padx=10, pady=10)
 
-	url_entry = Entry(new_window, width=40)
+	url_entry = customtkinter.CTkEntry(new_window, width=500)
 	url_entry.grid(row=0, column=1, padx=10, pady=10)
 
-	download_button = Button(new_window, text="Download", command=download)
+	download_button = customtkinter.CTkButton(new_window, text="Download", command=download)
 	download_button.grid(row=2, column=0, columnspan=2, pady=10)
 	new_window.mainloop()
 	
@@ -265,31 +271,29 @@ class CustomTranslator:
 
 class TranslatorGUI:
 	def __init__(self, master):
+		master.geometry("500x580")
+		master.iconbitmap("Flag.ico")
+		self.menubar = CTkMenuBar(master=master)
+		self.file = self.menubar.add_cascade("File")
+		self.help = self.menubar.add_cascade("Help")
+
+		filedropdown = CustomDropdownMenu(widget=self.file,width=100)
+		filedropdown.add_option(option="Convert Audio file to MP3",command=self.Convert_Audio_Files)
+		filedropdown.add_option(option="Extract audio from Video", command=self.extract_audio)
+		filedropdown.add_option(option="Youtube Downloader", command=YouTubeDownloader)
+		filedropdown.add_option(option="Exit", command=master.destroy)
+
+		helpdropdown = CustomDropdownMenu(widget=self.help,width=50)
+		helpdropdown.add_option(option="About", command=self.show_about)
+		# master.iconbitmap(r"Resources\icon.ico") Define icon to set window icon
 		master.title("Audio File Translator - S2ST")
 		master.geometry("500x580")
 		master.maxsize(700, 700)
 		master.attributes('-fullscreen', False)
-		self.label = Label(master, text="Audio File Translator - S2ST", font=("Arial", 12, "bold"), fg="red", pady=18)
-		self.label.pack()
-		
-		# Menu Bar
-		menubar = Menu(master)
-		master.config(menu=menubar)
+		self.label = customtkinter.CTkLabel(master=master,text="Audio File Translator - S2ST",font=("Arial", 12, "bold"),
+							   text_color="red")
+		self.label.pack(pady=18)
 
-		# File Menu
-		file_menu = Menu(menubar, tearoff=0)
-		menubar.add_cascade(label="File", menu=file_menu)
-		file_menu.add_command(label="Convert Audio file to MP3", command=self.Convert_Audio_Files)
-		file_menu.add_command(label="Extract audio from Video", command=self.extract_audio)
-		
-		file_menu.add_command(label="Youtube Downloader", command=YouTubeDownloader)
-		file_menu.add_command(label="Exit", command=master.destroy)
-
-		# Help Menu
-		help_menu = Menu(menubar, tearoff=0)
-		menubar.add_cascade(label="Help", menu=help_menu)
-		help_menu.add_command(label="About", command=self.show_about)
-		
 		try:
 			banner_image = Image.open("Flag.png")
 			banner_image = banner_image.resize((200, 100))
@@ -300,37 +304,39 @@ class TranslatorGUI:
 		except:
 			pass
 
-		center_frame = ttk.Frame(master)
-		center_frame.pack(expand=True)
-
-		self.label_input = Label(center_frame, text="Select Audio File:")
+		self.label_input = customtkinter.CTkLabel(master, text="Select Audio File:")
 		self.label_input.pack(side="top", pady=10)
 
-		self.browse_button = Button(center_frame, text="Browse", command=self.browse)
+		self.browse_button = customtkinter.CTkButton(master, text="Browse", command=self.browse)
 		self.browse_button.pack(side="top", pady=10)
 
-		self.label_file_title = Label(center_frame, text="Selected File Title:")
+		self.label_file_title = customtkinter.CTkLabel(master, text="Selected File Title:")
 		self.label_file_title.pack(side="top", pady=5)
 
 		# Language selection drop-down menu for target language
-		self.label_target_language = Label(center_frame, text="Select Target Language:")
+		self.label_target_language = customtkinter.CTkLabel(master, text="Select Target Language:")
 		self.label_target_language.pack(side="top", pady=5)
 
 		languages = ["en", "es", "fr", "de", "ja", "ko", "tr", "ar", "ru", "he", "hi", "it", "pt"]
-		self.translator_instance = CustomTranslator()  # Use the same instance for translation
-		self.target_language_dropdown = OptionMenu(center_frame, self.translator_instance.target_language, *languages)
+
+		self.translator_instance = CustomTranslator() # Use the same instance for translation
+		self.stringvarlanguage = customtkinter.StringVar()
+		self.target_language_dropdown = customtkinter.CTkOptionMenu(master,variable=self.stringvarlanguage,
+															   values=languages)
 		self.target_language_dropdown.pack(side="top", pady=5)
+		self.target_language_dropdown.set(languages[0])
 		
-		self.translate_button = Button(center_frame, text="Translate", command=self.translate)
+		self.translate_button = customtkinter.CTkButton(master, text="Translate", command=self.translate)
 		self.translate_button.pack(side="top", pady=10)
 
-		self.stop_button = Button(center_frame, text="Stop Playing Translated File", command=self.stop_playing)
+		self.stop_button = customtkinter.CTkButton(master, text="Stop Playing Translated File",
+												   command=self.stop_playing)
 		self.stop_button.pack(side="top", pady=5)
 
-		self.progress_bar = ttk.Progressbar(center_frame, variable=DoubleVar(), mode='indeterminate')
+		self.progress_bar = customtkinter.CTkProgressBar(master, variable=DoubleVar(), mode='indeterminate')
 		self.progress_bar.pack(side="top", pady=10)
 
-		self.label_status = Label(center_frame, text="")
+		self.label_status = customtkinter.CTkLabel(master, text="")
 		self.label_status.pack(side="top", pady=5)
 		
 		self.audio_path = ""
@@ -404,7 +410,8 @@ class TranslatorGUI:
 		self.audio_path = file_path
 
 		file_title = file_path.split("/")[-1]
-		self.label_file_title.config(text=f"Selected File Title: {file_title}")
+		if file_title != "":
+			self.label_file_title.configure(text=f"Selected File Title: {file_title}")
 
 	def translate(self):
 		if self.audio_path:
@@ -413,7 +420,7 @@ class TranslatorGUI:
 				translation_thread = threading.Thread(target=self.run_translation, args=(output_path,))
 				translation_thread.start()
 				self.progress_bar.start()
-				self.label_status.config(text="Translation in progress...")
+				self.label_status.configure(text="Translation in progress...")
 
 	def run_translation(self, output_path):
 		try:
@@ -445,7 +452,11 @@ class TranslatorGUI:
 				self.split_audio_chunk(self.audio_path, chunk_output_path, start_time, end_time)
 				
 				# Process the audio chunk using the translator instance
-				self.translator_instance.process_audio_chunk(chunk_output_path, self.translator_instance.target_language.get(),chunk_idx, output_path)
+				# print(self.target_language_dropdown.get())
+
+				self.translator_instance.process_audio_chunk(chunk_output_path,
+															 self.target_language_dropdown.get(),
+															 chunk_idx, output_path)
 				chunk_files.append(chunk_output_path)
 				
 				Translation_chunk_output_path = f"{output_path}_Translation_chunk{chunk_idx + 1}.mp3"
@@ -463,7 +474,7 @@ class TranslatorGUI:
 			self.delete_chunk_files(Translation_chunk_files)
 
 			self.progress_bar.stop()
-			self.label_status.config(text="Translation complete!")
+			self.label_status.configure(text="Translation complete!")
 
 			messagebox.showinfo("Success", f"Translation saved successfully at:\n{final_output_path}")
 
@@ -518,7 +529,7 @@ class TranslatorGUI:
 
 # Main function to run the GUI
 def run_gui():
-	root = Tk()
+	root = customtkinter.CTk()
 	app = TranslatorGUI(root)
 	root.mainloop()
 
