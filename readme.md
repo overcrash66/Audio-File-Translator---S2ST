@@ -42,6 +42,7 @@ Audio file translator, Speech To Speech Translator is a tool that allows you to 
   - v1.3: Minor GUI updates, fix extract audio from video exception.
   - v1.4 - Add missing Flag image, fix exception with Torchaudio backend not being able to handle the specified URI and format.
   - v1.5 - 7gxycn08 GUI updates
+  - v1.6 - New GUI updates, Add Voice to text translation, Add a portable version (No python or package installs are needed)
 
 ## Requirements
 
@@ -73,13 +74,23 @@ Make sure you have the following dependencies installed:
 git clone https://github.com/overcrash66/Audio-File-Translator---S2ST.git
 ```
 
-2- Install the required Python packages using:
+2- Create a vitrual env:
+
+```
+py -3.10 -m venv venv
+```
+
+```
+venv\Scripts\activate
+```
+
+3- Install the required Python packages using:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3- Run the Script:
+4- Run the Script:
 
 ```bash
 python AudioFileTranslator-S2ST.py

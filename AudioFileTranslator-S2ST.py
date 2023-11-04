@@ -11,20 +11,8 @@
 #				  - T2T: Google Speech Recognizer
 #				  - TTS: python gtts
 #
-# Version:		1.5
+# Version:		1.6
 #
-# Change Log:
-# October 14, 2023	   1.0 - Initial version
-# October 17, 2023	   1.1 - Better memory management
-#						   - Add support for large audio files translation
-#						   - Add FFMpeg to split large audio files and avoid out of memory errors and bad translation quality
-#						   - Add audio to mp3 conversion tool
-#						   - Fix freezing issue with stop play Translated audio file 
-#						   - Update GUI style
-# October 18, 2023	   1.2 - Fix audio to mp3 conversion + Add MP4 to mp3 converter + Add youtube downloader
-# October 19, 2023	   1.3 - Minor GUI updates, fix extract audio from video exception
-# October 20, 2023	   1.4 - add missing Flag image, fix exception with Torchaudio backend not being able to handle the specified URI and format
-# October 23, 2023	   1.5 - 7gxycn08 GUI updates
 ##############################################################################################################################
 """
 from tkinter import Tk, Label, Button, filedialog, StringVar, OptionMenu, messagebox, ttk, DoubleVar, Menu, Entry
@@ -178,7 +166,9 @@ class CustomTranslator:
 		self.model = None
 		self.target_language = StringVar()
 		self.target_language.set("en")	# Default target language
-
+		self.label_translated_text = StringVar()
+		self.text_translated = StringVar()
+		
 	def load_model(self):
 		# Load the model if it hasn't been loaded
 		if self.processor is None:	  
@@ -235,9 +225,11 @@ class CustomTranslator:
 				# Generate final audio output from translated text
 				self.generate_audio(translated_text, Translation_chunk_output_path, target_language)
 				logging.info(f"Processing successful. Translated text: {translated_text}")
+				return translated_text
 			else:
 				self.generate_audio(transcription, Translation_chunk_output_path, target_language)
 				logging.info(f"Processing successful. Translated text: {transcription}")
+				return transcription
 
 			# Log success
 			logging.info(f"Translation successful for {input_path}. Translated text: {transcription}")
@@ -271,7 +263,7 @@ class CustomTranslator:
 
 class TranslatorGUI:
 	def __init__(self, master):
-		master.geometry("500x580")
+		master.geometry("500x860")
 		master.iconbitmap("Flag.ico")
 		self.menubar = CTkMenuBar(master=master)
 		self.file = self.menubar.add_cascade("File")
@@ -287,10 +279,11 @@ class TranslatorGUI:
 		helpdropdown.add_option(option="About", command=self.show_about)
 		# master.iconbitmap(r"Resources\icon.ico") Define icon to set window icon
 		master.title("Audio File Translator - S2ST")
-		master.geometry("500x580")
-		master.maxsize(700, 700)
+		master.geometry("500x860")
+		master.minsize(500, 860)
+		master.maxsize(700, 900)
 		master.attributes('-fullscreen', False)
-		self.label = customtkinter.CTkLabel(master=master,text="Audio File Translator - S2ST",font=("Arial", 12, "bold"),
+		self.label = customtkinter.CTkLabel(master=master,text="Audio File Translator - S2ST",font=("Arial", 18, "bold"),
 							   text_color="red")
 		self.label.pack(pady=18)
 
@@ -310,7 +303,7 @@ class TranslatorGUI:
 		self.browse_button = customtkinter.CTkButton(master, text="Browse", command=self.browse)
 		self.browse_button.pack(side="top", pady=10)
 
-		self.label_file_title = customtkinter.CTkLabel(master, text="Selected File Title:")
+		self.label_file_title = customtkinter.CTkLabel(master, text="Selected File Title:",font=("Arial", 12, "bold"),text_color="green")
 		self.label_file_title.pack(side="top", pady=5)
 
 		# Language selection drop-down menu for target language
@@ -340,7 +333,29 @@ class TranslatorGUI:
 		self.label_status.pack(side="top", pady=5)
 		
 		self.audio_path = ""
-	
+
+		self.label_translated_text = customtkinter.CTkLabel(master, text="Translated Text:",font=("Arial", 12, "bold"),text_color="green")
+		self.label_translated_text.pack(side="top", pady=5)
+		
+		self.text_translated = customtkinter.CTkTextbox(master, height=200, width=400)
+		self.text_translated.pack(side="top", pady=5)
+		
+		self.save_button = customtkinter.CTkButton(master, text="Save Text Translation", command=self.save_translation)
+		self.save_button.pack(side="left", pady=5)
+		self.save_button.pack_forget()
+		
+		self.clear_button = customtkinter.CTkButton(master, text="Clear", command=self.clear_text)
+		self.clear_button.pack(side="right", pady=5)
+		
+	def translate(self):
+		if self.audio_path:
+			output_path = filedialog.asksaveasfilename(defaultextension=".mp3", filetypes=[("MP3 Files", "*.mp3")])
+			if output_path:
+				translation_thread = threading.Thread(target=self.run_translation, args=(output_path,))
+				translation_thread.start()
+				self.progress_bar.start()
+				self.label_status.configure(text="Translation in progress...",font=("Arial", 12, "bold"),text_color="red")	 
+
 	def extract_audio(self):
 		input_video = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4")])
 		if input_video != '':
@@ -402,7 +417,7 @@ class TranslatorGUI:
 			Start(Input_file_path)
 	
 	def show_about(self):
-		messagebox.showinfo("About", "Audio File Translator - S2ST v1.5\n\nCreated by Wael Sahli\n\nSpecial Thanks TO: 7gxycn08 for GUI updates")
+		messagebox.showinfo("About", "Audio File Translator - S2ST v1.6\n\nCreated by Wael Sahli\n\nSpecial Thanks TO: 7gxycn08 for GUI updates")
 	
 	def browse(self):
 		file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.mp3")])
@@ -412,16 +427,13 @@ class TranslatorGUI:
 		file_title = file_path.split("/")[-1]
 		if file_title != "":
 			self.label_file_title.configure(text=f"Selected File Title: {file_title}")
-
-	def translate(self):
-		if self.audio_path:
-			output_path = filedialog.asksaveasfilename(defaultextension=".mp3", filetypes=[("MP3 Files", "*.mp3")])
-			if output_path:
-				translation_thread = threading.Thread(target=self.run_translation, args=(output_path,))
-				translation_thread.start()
-				self.progress_bar.start()
-				self.label_status.configure(text="Translation in progress...")
-
+	
+	def clear_text(self):
+		# Clear the text in the text widget
+		self.text_translated.configure(state='normal')
+		self.text_translated.delete("1.0", "end")
+		self.text_translated.configure(state='disabled')
+	
 	def run_translation(self, output_path):
 		try:
 			input_file = self.audio_path
@@ -454,10 +466,15 @@ class TranslatorGUI:
 				# Process the audio chunk using the translator instance
 				# print(self.target_language_dropdown.get())
 
-				self.translator_instance.process_audio_chunk(chunk_output_path,
+				translation_result = self.translator_instance.process_audio_chunk(chunk_output_path,
 															 self.target_language_dropdown.get(),
 															 chunk_idx, output_path)
 				chunk_files.append(chunk_output_path)
+
+				# Update translated text in text widget
+				self.text_translated.configure(state='normal')
+				self.text_translated.insert('end', f"{translation_result}\n\n")
+				self.text_translated.configure(state='disabled')
 				
 				Translation_chunk_output_path = f"{output_path}_Translation_chunk{chunk_idx + 1}.mp3"
 				Translation_chunk_files.append(Translation_chunk_output_path)
@@ -474,14 +491,13 @@ class TranslatorGUI:
 			self.delete_chunk_files(Translation_chunk_files)
 
 			self.progress_bar.stop()
-			self.label_status.configure(text="Translation complete!")
-
-			messagebox.showinfo("Success", f"Translation saved successfully at:\n{final_output_path}")
-
+			self.label_status.configure(text="Translation complete!",font=("Arial", 12, "bold"),text_color="green")
+			self.save_button.pack()
+			
 		except Exception as e:
 			logging.error(f"Error during translation: {e}")
 			raise
-
+				
 	# Function to split audio into a chunk using ffmpeg
 	def split_audio_chunk(self, input_path, output_path, start_time, end_time):
 		ffmpeg_cmd = f'ffmpeg -i "{input_path}" -ss {start_time} -to {end_time} -c copy "{output_path}"'
@@ -526,7 +542,21 @@ class TranslatorGUI:
 
 	def stop_playing(self):
 		self.translator_instance.stop_audio()
-
+	
+	def save_translation(self):
+		translation_text = self.text_translated.get("1.0", "end-1c")
+		if translation_text:
+			output_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text Files", "*.txt")])
+			if output_path:
+				try:
+					with open(output_path, "w", encoding="utf-8") as file:
+						file.write(translation_text)
+					print(f"Translation saved to: {output_path}")
+				except Exception as e:
+					print(f"Error saving translation to file: {e}")
+			else:
+				print("Save operation cancelled.")
+	
 # Main function to run the GUI
 def run_gui():
 	root = customtkinter.CTk()
