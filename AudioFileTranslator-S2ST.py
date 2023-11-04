@@ -166,8 +166,6 @@ class CustomTranslator:
 		self.model = None
 		self.target_language = StringVar()
 		self.target_language.set("en")	# Default target language
-		self.label_translated_text = StringVar()
-		self.text_translated = StringVar()
 		
 	def load_model(self):
 		# Load the model if it hasn't been loaded
