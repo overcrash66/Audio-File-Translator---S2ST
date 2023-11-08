@@ -11,11 +11,11 @@
 #				  - T2T: Google Speech Recognizer
 #				  - TTS: python gtts
 #
-# Version:		1.6
+# Version:		1.7
 #
 ##############################################################################################################################
 """
-from tkinter import Tk, Label, Button, filedialog, StringVar, OptionMenu, messagebox, ttk, DoubleVar, Menu, Entry
+from tkinter import Tk, Label, Button, filedialog, StringVar, OptionMenu, messagebox, ttk, DoubleVar, Menu, Entry, Frame
 import threading
 from PIL import Image, ImageTk
 import pygame
@@ -39,6 +39,7 @@ from CTkMenuBar import * #Addon Downloaded from #https://github.com/Akascape/CTk
 
 customtkinter.set_appearance_mode("System")	 # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
+
 def YouTubeDownloader():
 	new_window = customtkinter.CTk()
 	new_window.iconbitmap("Flag.ico")
@@ -60,7 +61,7 @@ def YouTubeDownloader():
 
 			output_path = f"{video_title}.mp4"
 			subprocess.run(["ffmpeg", "-i", yt.streams.filter(file_extension='mp4').first().download(), output_path])
-
+			
 			messagebox.showinfo("Success", f"Download complete!\nFile saved as {output_path}")
 
 		except Exception as e:
@@ -256,34 +257,31 @@ class CustomTranslator:
 		try:	
 			pygame.mixer.music.stop()
 		except:
-			pass
-			
+			pass		
 
 class TranslatorGUI:
 	def __init__(self, master):
-		master.geometry("500x860")
 		master.iconbitmap("Flag.ico")
 		self.menubar = CTkMenuBar(master=master)
 		self.file = self.menubar.add_cascade("File")
 		self.help = self.menubar.add_cascade("Help")
 
-		filedropdown = CustomDropdownMenu(widget=self.file,width=100)
-		filedropdown.add_option(option="Convert Audio file to MP3",command=self.Convert_Audio_Files)
+		filedropdown = CustomDropdownMenu(widget=self.file, width=100)
+		filedropdown.add_option(option="Convert Audio file to MP3", command=self.Convert_Audio_Files)
 		filedropdown.add_option(option="Extract audio from Video", command=self.extract_audio)
 		filedropdown.add_option(option="Youtube Downloader", command=YouTubeDownloader)
 		filedropdown.add_option(option="Exit", command=master.destroy)
 
-		helpdropdown = CustomDropdownMenu(widget=self.help,width=50)
+		helpdropdown = CustomDropdownMenu(widget=self.help, width=50)
 		helpdropdown.add_option(option="About", command=self.show_about)
-		# master.iconbitmap(r"Resources\icon.ico") Define icon to set window icon
 		master.title("Audio File Translator - S2ST")
-		master.geometry("500x860")
-		master.minsize(500, 860)
-		master.maxsize(700, 900)
+		master.geometry("600x640")
+		master.minsize(600,640)
+		master.maxsize(740,640)
 		master.attributes('-fullscreen', False)
-		self.label = customtkinter.CTkLabel(master=master,text="Audio File Translator - S2ST",font=("Arial", 18, "bold"),
-							   text_color="red")
-		self.label.pack(pady=18)
+
+		self.label = customtkinter.CTkLabel(master=master, text="Audio File Translator - S2ST", font=("Arial", 18, "bold"),text_color="red")
+		self.label.pack(side="top", pady=10)
 
 		try:
 			banner_image = Image.open("Flag.png")
@@ -291,60 +289,65 @@ class TranslatorGUI:
 			banner_photo = ImageTk.PhotoImage(banner_image)
 			banner_label = Label(master, image=banner_photo)
 			banner_label.image = banner_photo
-			banner_label.pack()
+			banner_label.pack(side="top", pady=2)
 		except:
 			pass
 
-		self.label_input = customtkinter.CTkLabel(master, text="Select Audio File:")
-		self.label_input.pack(side="top", pady=10)
-
-		self.browse_button = customtkinter.CTkButton(master, text="Browse", command=self.browse)
-		self.browse_button.pack(side="top", pady=10)
-
-		self.label_file_title = customtkinter.CTkLabel(master, text="Selected File Title:",font=("Arial", 12, "bold"),text_color="green")
-		self.label_file_title.pack(side="top", pady=5)
-
-		# Language selection drop-down menu for target language
-		self.label_target_language = customtkinter.CTkLabel(master, text="Select Target Language:")
-		self.label_target_language.pack(side="top", pady=5)
-
-		languages = ["en", "es", "fr", "de", "ja", "ko", "tr", "ar", "ru", "he", "hi", "it", "pt"]
-
-		self.translator_instance = CustomTranslator() # Use the same instance for translation
-		self.stringvarlanguage = customtkinter.StringVar()
-		self.target_language_dropdown = customtkinter.CTkOptionMenu(master,variable=self.stringvarlanguage,
-															   values=languages)
-		self.target_language_dropdown.pack(side="top", pady=5)
-		self.target_language_dropdown.set(languages[0])
-		
-		self.translate_button = customtkinter.CTkButton(master, text="Translate", command=self.translate)
-		self.translate_button.pack(side="top", pady=10)
-
-		self.stop_button = customtkinter.CTkButton(master, text="Stop Playing Translated File",
-												   command=self.stop_playing)
-		self.stop_button.pack(side="top", pady=5)
-
-		self.progress_bar = customtkinter.CTkProgressBar(master, variable=DoubleVar(), mode='indeterminate')
-		self.progress_bar.pack(side="top", pady=10)
-
-		self.label_status = customtkinter.CTkLabel(master, text="")
-		self.label_status.pack(side="top", pady=5)
+		# Create a frame for widgets using pack
+		pack_frame = Frame(master, bg="#222121")
+		pack_frame.pack(side="left", padx=2)
 		
 		self.audio_path = ""
+		
+		self.label_input = customtkinter.CTkLabel(pack_frame, text="Select Audio File:", font=("Arial", 12, "bold"),text_color="green")
+		self.label_input.pack(pady=5)
 
-		self.label_translated_text = customtkinter.CTkLabel(master, text="Translated Text:",font=("Arial", 12, "bold"),text_color="green")
-		self.label_translated_text.pack(side="top", pady=5)
+		self.browse_button = customtkinter.CTkButton(pack_frame, text="Browse", command=self.browse)
+		self.browse_button.pack(pady=5)
+
+		self.label_file_title = customtkinter.CTkLabel(pack_frame, text="Selected File Title:", font=("Arial", 12, "bold"),text_color="green")
+		self.label_file_title.pack(pady=5)
+
+		self.label_target_language = customtkinter.CTkLabel(pack_frame, text="Select Target Language:", font=("Arial", 12, "bold"),text_color="green")
+		self.label_target_language.pack(pady=5)
+
+		languages = ["en", "es", "fr", "de", "ja", "ko", "tr", "ar", "ru", "he", "hi", "it", "pt"]
 		
-		self.text_translated = customtkinter.CTkTextbox(master, height=200, width=400)
-		self.text_translated.pack(side="top", pady=5)
+		self.translator_instance = CustomTranslator()
 		
-		self.save_button = customtkinter.CTkButton(master, text="Save Text Translation", command=self.save_translation)
-		self.save_button.pack(side="left", pady=5)
-		self.save_button.pack_forget()
+		self.stringvarlanguage = customtkinter.StringVar()
+		self.target_language_dropdown = customtkinter.CTkOptionMenu(pack_frame, variable=self.stringvarlanguage,values=languages)
+		self.target_language_dropdown.pack(pady=5)
+		self.target_language_dropdown.set(languages[0])
+
+		self.translate_button = customtkinter.CTkButton(pack_frame, text="Translate", command=self.translate)
+		self.translate_button.pack(pady=5)
+
+		self.stop_button = customtkinter.CTkButton(pack_frame, text="Stop Playing Translated File",command=self.stop_playing)
+		self.stop_button.pack(pady=5)
 		
-		self.clear_button = customtkinter.CTkButton(master, text="Clear", command=self.clear_text)
-		self.clear_button.pack(side="right", pady=5)
+		# Create a frame for widgets using grid
+		grid_frame = Frame(master, bg="#222121")
+		grid_frame.pack(side="right", padx=2)
 		
+		self.label_translated_text = customtkinter.CTkLabel(grid_frame, text="Translated Text:", font=("Arial", 12, "bold"), text_color="green")
+		self.label_translated_text.grid(row=5, column=0, columnspan=2, pady=10)
+		
+		self.clear_button = customtkinter.CTkButton(grid_frame, text="Clear", command=self.clear_text)
+		self.clear_button.grid(row=6, column=1, columnspan=2, pady=10)
+		
+		self.text_translated = customtkinter.CTkTextbox(grid_frame, height=200, width=400)
+		self.text_translated.grid(row=7, column=0, columnspan=2, pady=10)
+		
+		self.save_button = customtkinter.CTkButton(grid_frame, text="Save Text Translation", command=self.save_translation)
+		self.save_button.grid(row=9, column=0, columnspan=2, pady=10)
+		
+		self.progress_bar = customtkinter.CTkProgressBar(grid_frame, variable=DoubleVar(), mode='indeterminate')
+		self.progress_bar.grid(row=10, column=0, columnspan=2, pady=10)
+
+		self.label_status = customtkinter.CTkLabel(grid_frame, text="")
+		self.label_status.grid(row=11, column=0, columnspan=2, pady=5)
+
 	def translate(self):
 		if self.audio_path:
 			output_path = filedialog.asksaveasfilename(defaultextension=".mp3", filetypes=[("MP3 Files", "*.mp3")])
@@ -415,7 +418,7 @@ class TranslatorGUI:
 			Start(Input_file_path)
 	
 	def show_about(self):
-		messagebox.showinfo("About", "Audio File Translator - S2ST v1.6\n\nCreated by Wael Sahli\n\nSpecial Thanks TO: 7gxycn08 for GUI updates")
+		messagebox.showinfo("About", "Audio File Translator - S2ST v1.7\n\nCreated by Wael Sahli\n\nSpecial Thanks TO: 7gxycn08 for GUI updates")
 	
 	def browse(self):
 		file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.mp3")])
@@ -490,7 +493,6 @@ class TranslatorGUI:
 
 			self.progress_bar.stop()
 			self.label_status.configure(text="Translation complete!",font=("Arial", 12, "bold"),text_color="green")
-			self.save_button.pack()
 			
 		except Exception as e:
 			logging.error(f"Error during translation: {e}")
