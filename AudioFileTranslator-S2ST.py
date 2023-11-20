@@ -11,11 +11,11 @@
 #				  - T2T: Google Speech Recognizer
 #				  - TTS: python gtts
 #
-# Version:		1.7
+# Version:		1.8
 #
 ##############################################################################################################################
 """
-from tkinter import Tk, Label, Button, filedialog, StringVar, OptionMenu, messagebox, ttk, DoubleVar, Menu, Entry, Frame
+from tkinter import Tk, Label, Button, filedialog, StringVar, OptionMenu, messagebox, ttk, DoubleVar, Menu, Entry, Frame, simpledialog
 import threading
 from PIL import Image, ImageTk
 import pygame
@@ -36,20 +36,18 @@ import torch
 import customtkinter
 import httpx
 from CTkMenuBar import * #Addon Downloaded from #https://github.com/Akascape/CTkMenuBar
+import re
 
 customtkinter.set_appearance_mode("System")	 # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 
 def YouTubeDownloader():
-	new_window = customtkinter.CTk()
-	new_window.iconbitmap("Flag.ico")
-	new_window.title("YouTube Downloader")
-	new_window.resizable(False, False)
-	new_window.attributes('-fullscreen', False)
-	new_window.attributes("-topmost", True)
+	def sanitize_filename(title):
+		# Replace non-alphanumeric characters with underscores
+		return re.sub(r'\W+', '_', title)
+
 	def download():
 		url = url_entry.get()
-		format_selected = "mp4"
 
 		if not url:
 			messagebox.showerror("Error", "Please enter a valid YouTube URL.")
@@ -57,16 +55,37 @@ def YouTubeDownloader():
 
 		try:
 			yt = YouTube(url)
-			video_title = yt.title
-
+			video_title = sanitize_filename(yt.title)
 			output_path = f"{video_title}.mp4"
-			subprocess.run(["ffmpeg", "-i", yt.streams.filter(file_extension='mp4').first().download(), output_path])
+			current_path = os.getcwd()
 			
-			messagebox.showinfo("Success", f"Download complete!\nFile saved as {output_path}")
+			t = current_path + '\\'+ output_path
+			if os.path.exists(t):
+				t = output_path
+				os.remove(t)
+				print(f"deleted file {t}")
+
+			status_label.configure(text="Downloading...")
+			new_window.update()
+			
+			# Get the highest resolution stream
+			video_stream = yt.streams.get_highest_resolution()
+			# Get the video stream URL
+			video_url = video_stream.url
+			# Use subprocess to call ffmpeg for downloading
+			subprocess.run(['ffmpeg', '-i', video_url, '-c', 'copy', f'{output_path}'])
+
+			new_window.after(10, lambda: status_label.configure(text=f"Download complete!\nFile saved as: {output_path}"))
 
 		except Exception as e:
-			messagebox.showerror("Error", f"An error occurred: {str(e)}")
-	
+			status_label.configure(text=f"Error: {str(e)}")
+
+	new_window = customtkinter.CTk()
+	new_window.iconbitmap("Flag.ico")
+	new_window.title("YouTube Downloader")
+	new_window.attributes('-fullscreen', False)
+	new_window.resizable(False, False)
+	new_window.attributes("-topmost", True)
 	url_label = customtkinter.CTkLabel(new_window, text="YouTube URL:")
 	url_label.grid(row=0, column=0, padx=10, pady=10)
 
@@ -75,6 +94,9 @@ def YouTubeDownloader():
 
 	download_button = customtkinter.CTkButton(new_window, text="Download", command=download)
 	download_button.grid(row=2, column=0, columnspan=2, pady=10)
+
+	status_label = customtkinter.CTkLabel(new_window, text="")
+	status_label.grid(row=3, column=0, columnspan=2, pady=10)
 	new_window.mainloop()
 	
 class SentenceTranslator:
@@ -274,7 +296,7 @@ class TranslatorGUI:
 
 		helpdropdown = CustomDropdownMenu(widget=self.help, width=50)
 		helpdropdown.add_option(option="About", command=self.show_about)
-		master.title("Audio File Translator - S2ST")
+		master.title("Audio File Translator - S2TT - S2ST")
 		master.geometry("600x640")
 		master.minsize(600,640)
 		master.maxsize(740,640)
@@ -418,7 +440,7 @@ class TranslatorGUI:
 			Start(Input_file_path)
 	
 	def show_about(self):
-		messagebox.showinfo("About", "Audio File Translator - S2ST v1.7\n\nCreated by Wael Sahli\n\nSpecial Thanks TO: 7gxycn08 for GUI updates")
+		messagebox.showinfo("About", "Audio File Translator - S2ST v1.8\n\nCreated by Wael Sahli\n\nSpecial Thanks TO: 7gxycn08 for GUI updates")
 	
 	def browse(self):
 		file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.mp3")])

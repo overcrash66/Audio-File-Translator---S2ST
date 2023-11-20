@@ -45,7 +45,8 @@ Audio file translator, Speech To Speech Translator is a tool that allows you to 
   - v1.6 - New GUI updates, Add Voice to text translation,
          Added a portable version (No python or package installs are needed, 
          you need to copy and replace 'AudioFileTranslator-S2ST.py' file from 'main' folder to '/AudioFileTranslatror-Portable/resources')
-  - v1.7 - New GUI updates
+  - v1.7 - New GUI updates.
+  - V1.8 - Some Youtube Downloader fixes and improvements.
 
 ## Requirements
 
