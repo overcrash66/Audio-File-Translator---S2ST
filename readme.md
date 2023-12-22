@@ -105,6 +105,7 @@ python AudioFileTranslator-S2ST.py
 - Convert Audio file to MP3
 - Extract audio from Video
 - YouTube Downloader
+- Replace Audio in Video
 - Exit
 
 2- Help Menu:
