@@ -47,6 +47,7 @@ Audio file translator, Speech To Speech Translator is a tool that allows you to 
          you need to copy and replace 'AudioFileTranslator-S2ST.py' file from 'main' folder to '/AudioFileTranslatror-Portable/resources')
   - v1.7 - New GUI updates.
   - V1.8 - Some Youtube Downloader fixes and improvements.
+  - V1.9 - Add a tool who replaces mp4 Video file Audio with translation audio file. (Go to: file > Replace Audio in Video)
 
 ## Requirements
 

@@ -11,7 +11,7 @@
 #				  - T2T: Google Speech Recognizer
 #				  - TTS: python gtts
 #
-# Version:		1.8
+# Version:		1.9
 #
 ##############################################################################################################################
 """
@@ -40,6 +40,11 @@ import re
 
 customtkinter.set_appearance_mode("System")	 # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
+
+def run_external_script():
+	script_path = 'ReplaceVideoAudio.py'
+	if script_path:
+		subprocess.run(['python', script_path])
 
 def YouTubeDownloader():
 	def sanitize_filename(title):
@@ -292,6 +297,7 @@ class TranslatorGUI:
 		filedropdown.add_option(option="Convert Audio file to MP3", command=self.Convert_Audio_Files)
 		filedropdown.add_option(option="Extract audio from Video", command=self.extract_audio)
 		filedropdown.add_option(option="Youtube Downloader", command=YouTubeDownloader)
+		filedropdown.add_option(option="Replace Audio in Video", command=run_external_script)
 		filedropdown.add_option(option="Exit", command=master.destroy)
 
 		helpdropdown = CustomDropdownMenu(widget=self.help, width=50)
@@ -440,7 +446,7 @@ class TranslatorGUI:
 			Start(Input_file_path)
 	
 	def show_about(self):
-		messagebox.showinfo("About", "Audio File Translator - S2ST v1.8\n\nCreated by Wael Sahli\n\nSpecial Thanks TO: 7gxycn08 for GUI updates")
+		messagebox.showinfo("About", "Audio File Translator - S2ST v1.9\n\nCreated by Wael Sahli\n\nSpecial Thanks TO: 7gxycn08 for GUI updates")
 	
 	def browse(self):
 		file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.mp3")])
