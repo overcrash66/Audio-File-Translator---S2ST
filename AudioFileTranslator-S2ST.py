@@ -247,6 +247,17 @@ class CustomTranslator:
 			if target_language != "en":
 				translator = SentenceTranslator(src="en", dst=target_language)
 				translated_text = translator(transcription)
+				
+				#fix a bug: Text Validation check if we have duplicate successive words
+				words = translated_text.split()
+				cleaned_words = [words[0]]
+
+				for word in words[1:]:
+					if word != cleaned_words[-1]:
+						cleaned_words.append(word)
+
+				cleaned_str = ' '.join(cleaned_words)
+				translated_text = cleaned_str
 
 				# Generate final audio output from translated text
 				self.generate_audio(translated_text, Translation_chunk_output_path, target_language)
