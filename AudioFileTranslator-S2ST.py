@@ -11,7 +11,7 @@
 #				  - T2T: Google Speech Recognizer
 #				  - TTS: python gtts
 #
-# Version:		1.9
+# Version:		2.0
 #
 ##############################################################################################################################
 """
@@ -241,23 +241,23 @@ class CustomTranslator:
 			# Decode token ids to text
 			transcription = self.processor.batch_decode(predicted_ids, skip_special_tokens=True)[0]
 			
+			#fix a bug: Text Validation check if we have duplicate successive words
+			words = transcription.split()
+			cleaned_words = [words[0]]
+
+			for word in words[1:]:
+				if word != cleaned_words[-1]:
+					cleaned_words.append(word)
+
+			cleaned_str = ' '.join(cleaned_words)
+			transcription = cleaned_str
+
 			Translation_chunk_output_path = f"{output_path}_Translation_chunk{chunk_idx + 1}.mp3"
 			
 			# Use SpeechRecognizer for translation (modify as needed)
 			if target_language != "en":
 				translator = SentenceTranslator(src="en", dst=target_language)
 				translated_text = translator(transcription)
-				
-				#fix a bug: Text Validation check if we have duplicate successive words
-				words = translated_text.split()
-				cleaned_words = [words[0]]
-
-				for word in words[1:]:
-					if word != cleaned_words[-1]:
-						cleaned_words.append(word)
-
-				cleaned_str = ' '.join(cleaned_words)
-				translated_text = cleaned_str
 
 				# Generate final audio output from translated text
 				self.generate_audio(translated_text, Translation_chunk_output_path, target_language)
@@ -375,7 +375,7 @@ class TranslatorGUI:
 		self.clear_button = customtkinter.CTkButton(grid_frame, text="Clear", command=self.clear_text)
 		self.clear_button.grid(row=6, column=1, columnspan=2, pady=10)
 		
-		self.text_translated = customtkinter.CTkTextbox(grid_frame, height=200, width=400)
+		self.text_translated = customtkinter.CTkTextbox(grid_frame, height=200, width=400, wrap = 'word')
 		self.text_translated.grid(row=7, column=0, columnspan=2, pady=10)
 		
 		self.save_button = customtkinter.CTkButton(grid_frame, text="Save Text Translation", command=self.save_translation)
@@ -457,7 +457,7 @@ class TranslatorGUI:
 			Start(Input_file_path)
 	
 	def show_about(self):
-		messagebox.showinfo("About", "Audio File Translator - S2ST v1.9\n\nCreated by Wael Sahli\n\nSpecial Thanks TO: 7gxycn08 for GUI updates")
+		messagebox.showinfo("About", "Audio File Translator - S2ST v2.0\n\nCreated by Wael Sahli\n\nSpecial Thanks TO: 7gxycn08 for GUI updates")
 	
 	def browse(self):
 		file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.mp3")])
@@ -502,9 +502,6 @@ class TranslatorGUI:
 
 				# Split the audio file into a chunk
 				self.split_audio_chunk(self.audio_path, chunk_output_path, start_time, end_time)
-				
-				# Process the audio chunk using the translator instance
-				# print(self.target_language_dropdown.get())
 
 				translation_result = self.translator_instance.process_audio_chunk(chunk_output_path,
 															 self.target_language_dropdown.get(),
@@ -513,6 +510,11 @@ class TranslatorGUI:
 
 				# Update translated text in text widget
 				self.text_translated.configure(state='normal')
+				if self.target_language_dropdown.get() == 'ar':
+					self.text_translated.tag_config("right", justify=customtkinter.RIGHT)
+					translation_result = ' '.join(reversed(translation_result.split()))
+					translation_result = translation_result.replace('.', '').replace(',', '')
+			
 				self.text_translated.insert('end', f"{translation_result}\n\n")
 				self.text_translated.configure(state='disabled')
 				
@@ -587,12 +589,35 @@ class TranslatorGUI:
 		if translation_text:
 			output_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text Files", "*.txt")])
 			if output_path:
-				try:
-					with open(output_path, "w", encoding="utf-8") as file:
-						file.write(translation_text)
+				if self.target_language_dropdown.get() == 'ar':
+					text = translation_text
+						
+					with open(output_path+'_temp', "w", encoding="utf-8") as file:
+						file.write(text)
+					print(f"Temp Translation saved to: {output_path}+'_temp'")		
+				
+					with open(output_path+'_temp', 'r', encoding="utf-8") as file2:
+						lines = file2.readlines()
+
+					reversed_lines = []
+					for line in lines:
+						words = line.split()
+						reversed_words = ' '.join(reversed(words))
+						reversed_lines.append(reversed_words)
+					reversed_content = '\n'.join(reversed_lines)
+					
+					with open(output_path, "w", encoding="utf-8") as file3:
+						file3.write(reversed_content)
 					print(f"Translation saved to: {output_path}")
-				except Exception as e:
-					print(f"Error saving translation to file: {e}")
+					os.remove(output_path+'_temp')
+				else:
+					try:
+						with open(output_path, "w", encoding="utf-8") as file:
+							file.write(translation_text)
+						print(f"Translation saved to: {output_path}")
+					except Exception as e:
+						print(f"Error saving translation to file: {e}")
+
 			else:
 				print("Save operation cancelled.")
 	

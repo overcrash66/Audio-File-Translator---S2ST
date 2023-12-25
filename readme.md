@@ -40,15 +40,19 @@ Audio file translator, Speech To Speech Translator is a tool that allows you to 
   - v1.1: Improved memory management, support for large audio files, FFMpeg integration, audio-to-MP3 conversion, and GUI updates.
   - v1.2: Fixed audio-to-MP3 conversion, added MP4 to MP3 converter, and introduced YouTube downloader.
   - v1.3: Minor GUI updates, fix extract audio from video exception.
-  - v1.4 - Add missing Flag image, fix exception with Torchaudio backend not being able to handle the specified URI and format.
-  - v1.5 - 7gxycn08 GUI updates
-  - v1.6 - New GUI updates, Add Voice to text translation,
+  - v1.4: Add missing Flag image, fix exception with Torchaudio backend not being able to handle the specified URI and format.
+  - v1.5: 7gxycn08 GUI updates
+  - v1.6: New GUI updates, Add Voice to text translation,
          Added a portable version (No python or package installs are needed, 
          you need to copy and replace 'AudioFileTranslator-S2ST.py' file from 'main' folder to '/AudioFileTranslatror-Portable/resources')
-  - v1.7 - New GUI updates.
-  - V1.8 - Some Youtube Downloader fixes and improvements.
-  - V1.9 - Add a tool who replaces mp4 Video file Audio with translation audio file. (Go to: file > Replace Audio in Video)
-         - Improve text translation by fixing a bug of duplicate successive words.
+  - v1.7: New GUI updates.
+  - V1.8: Some Youtube Downloader fixes and improvements.
+  - V1.9: Add a tool who replaces mp4 Video file Audio with translation audio file. 
+         (Go to: file > Replace Audio in Video)
+         - Improve text translation by fixing a bug of duplicate successive words, except for English.
+  - V2.0:- Fix Arabic translated text to be shown from right to left on textBox.
+         - Fix Save to text file arabic translated text to be shown from right to left.
+         - Fix a bug of duplicate successive words for English language.
 
 ## Requirements
 
