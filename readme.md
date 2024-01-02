@@ -57,7 +57,6 @@ Audio file translator, Speech To Speech Translator is a tool that allows you to 
         - Improve code readability.  
         - Add load model to GPU if available.  
         - Minor GUI updates.
-        - Created Distribution Packages (for Windows, Linux).
         - Remove portable version.
 
 ## Requirements
@@ -83,6 +82,20 @@ Make sure you have the following dependencies installed:
 - CTkMenuBar
 
 ## Usage
+
+1- Install using pip
+```
+pip install audio-file-translator
+
+```
+
+2- Run
+```
+audio-file-translator
+
+```
+
+## Or Manual installation
 
 1- Clone the repository:
 ```bash
@@ -139,10 +152,6 @@ python audio_file_translator.py
 
 6- Stop Playing Translated File:
 - Click the "Stop Playing Translated File" button to stop audio playback.
-
-## Distribution Packages:
-
-- Pre-built distribution Packages for Windows and Linux are available in dist folder.
 
 ## GUI Preview
 
