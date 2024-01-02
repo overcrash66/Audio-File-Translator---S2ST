@@ -53,7 +53,8 @@ Audio file translator, Speech To Speech Translator is a tool that allows you to 
   - V2.0:- Fix Arabic translated text to be shown from right to left on textBox.
          - Fix Save to text file arabic translated text to be shown from right to left.
          - Fix a bug of duplicate successive words for English language.
-  -V2.1:- Improve code readability.  
+  - V2.1:
+        - Improve code readability.  
         - Add load model to GPU if available.  
         - Minor GUI updates.
         - Created Distribution Packages (for Windows, Linux).
