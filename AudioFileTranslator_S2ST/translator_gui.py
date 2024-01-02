@@ -1,21 +1,4 @@
-"""
-###############################################################################################################################
-#										 Audio File Translator - S2ST														  #
-###############################################################################################################################
-# File:			AudioFileTranslator-S2ST.py
-# Author:		WAEL SAHLI
-#
-# Description:	 Audio file translator, Speech To Speech Translator is a tool 
-#				 that allows you to translate the content of an Audio file using:
-#				  - S2T: OpenAI's Whisper multilingual
-#				  - T2T: Google Speech Recognizer
-#				  - TTS: python gtts
-#
-# Version:		2.0
-#
-##############################################################################################################################
-"""
-from tkinter import Tk, Label, Button, filedialog, StringVar, OptionMenu, messagebox, ttk, DoubleVar, Menu, Entry, Frame, simpledialog
+from tkinter import Label, Button, filedialog, StringVar, OptionMenu, messagebox, ttk, DoubleVar, Menu, Entry, Frame, simpledialog
 import threading
 from PIL import Image, ImageTk
 import pygame
@@ -35,271 +18,18 @@ import librosa
 import torch
 import customtkinter
 import httpx
-from CTkMenuBar import * #Addon Downloaded from #https://github.com/Akascape/CTkMenuBar
+from CTkMenuBar import *
 import re
 
-customtkinter.set_appearance_mode("System")	 # Modes: system (default), light, dark
+from .youtube_downloader import YouTubeDownloader
+from .ReplaceVideoAudio import AudioReplacerGUI
+from .audio_translator import CustomTranslator
+
+customtkinter.set_appearance_mode("System")    # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
-
-def run_external_script():
-	script_path = 'ReplaceVideoAudio.py'
-	if script_path:
-		subprocess.run(['python', script_path])
-
-def YouTubeDownloader():
-	def sanitize_filename(title):
-		# Replace non-alphanumeric characters with underscores
-		return re.sub(r'\W+', '_', title)
-
-	def download():
-		url = url_entry.get()
-
-		if not url:
-			messagebox.showerror("Error", "Please enter a valid YouTube URL.")
-			return
-
-		try:
-			yt = YouTube(url)
-			video_title = sanitize_filename(yt.title)
-			output_path = f"{video_title}.mp4"
-			current_path = os.getcwd()
-			
-			t = current_path + '\\'+ output_path
-			if os.path.exists(t):
-				t = output_path
-				os.remove(t)
-				print(f"deleted file {t}")
-
-			status_label.configure(text="Downloading...")
-			new_window.update()
-			
-			# Get the highest resolution stream
-			video_stream = yt.streams.get_highest_resolution()
-			# Get the video stream URL
-			video_url = video_stream.url
-			# Use subprocess to call ffmpeg for downloading
-			subprocess.run(['ffmpeg', '-i', video_url, '-c', 'copy', f'{output_path}'])
-
-			new_window.after(10, lambda: status_label.configure(text=f"Download complete!\nFile saved as: {output_path}"))
-
-		except Exception as e:
-			status_label.configure(text=f"Error: {str(e)}")
-
-	new_window = customtkinter.CTk()
-	new_window.iconbitmap("Flag.ico")
-	new_window.title("YouTube Downloader")
-	new_window.attributes('-fullscreen', False)
-	new_window.resizable(False, False)
-	new_window.attributes("-topmost", True)
-	url_label = customtkinter.CTkLabel(new_window, text="YouTube URL:")
-	url_label.grid(row=0, column=0, padx=10, pady=10)
-
-	url_entry = customtkinter.CTkEntry(new_window, width=500)
-	url_entry.grid(row=0, column=1, padx=10, pady=10)
-
-	download_button = customtkinter.CTkButton(new_window, text="Download", command=download)
-	download_button.grid(row=2, column=0, columnspan=2, pady=10)
-
-	status_label = customtkinter.CTkLabel(new_window, text="")
-	status_label.grid(row=3, column=0, columnspan=2, pady=10)
-	new_window.mainloop()
-	
-class SentenceTranslator:
-	def __init__(self, src, dst, patience=-1, timeout=30, error_messages_callback=None):
-		self.src = src
-		self.dst = dst
-		self.patience = patience
-		self.timeout = timeout
-		self.error_messages_callback = error_messages_callback
-
-	def __call__(self, sentence):
-		try:
-			translated_sentence = []
-			# handle the special case: empty string.
-			if not sentence:
-				return None
-			translated_sentence = self.GoogleTranslate(sentence, src=self.src, dst=self.dst, timeout=self.timeout)
-			fail_to_translate = translated_sentence[-1] == '\n'
-			while fail_to_translate and self.patience:
-				translated_sentence = self.GoogleTranslate(translated_sentence, src=self.src, dst=self.dst,
-															timeout=self.timeout).text
-				if translated_sentence[-1] == '\n':
-					if self.patience == -1:
-						continue
-					self.patience -= 1
-				else:
-					fail_to_translate = False
-
-			return translated_sentence
-
-		except KeyboardInterrupt:
-			if self.error_messages_callback:
-				self.error_messages_callback("Cancelling all tasks")
-			else:
-				print("Cancelling all tasks")
-			return
-
-		except Exception as e:
-			if self.error_messages_callback:
-				self.error_messages_callback(e)
-			else:
-				print(e)
-			return
-
-	def GoogleTranslate(self, text, src, dst, timeout=30):
-		url = 'https://translate.googleapis.com/translate_a/'
-		params = 'single?client=gtx&sl=' + src + '&tl=' + dst + '&dt=t&q=' + text
-		headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', 'Referer': 'https://translate.google.com', }
-
-		try:
-			response = requests.get(url + params, headers=headers, timeout=timeout)
-			if response.status_code == 200:
-				response_json = response.json()[0]
-				length = len(response_json)
-				translation = ""
-				for i in range(length):
-					translation = translation + response_json[i][0]
-				return translation
-			return
-
-		except requests.exceptions.ConnectionError:
-			with httpx.Client() as client:
-				response = client.get(url + params, headers=headers, timeout=timeout)
-				if response.status_code == 200:
-					response_json = response.json()[0]
-					length = len(response_json)
-					translation = ""
-					for i in range(length):
-						translation = translation + response_json[i][0]
-					return translation
-				return
-
-		except KeyboardInterrupt:
-			if self.error_messages_callback:
-				self.error_messages_callback("Cancelling all tasks")
-			else:
-				print("Cancelling all tasks")
-			return
-
-		except Exception as e:
-			if self.error_messages_callback:
-				self.error_messages_callback(e)
-			else:
-				print(e)
-			return
-
-class CustomTranslator:
-	def __init__(self):
-		self.processor = None
-		self.model = None
-		self.target_language = StringVar()
-		self.target_language.set("en")	# Default target language
-		
-	def load_model(self):
-		# Load the model if it hasn't been loaded
-		if self.processor is None:	  
-			self.processor = WhisperProcessor.from_pretrained("openai/whisper-large-v2")
-			
-		if self.model is None:
-			self.model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-large-v2")
-		
-
-	def unload_model(self):
-		# Unload the model if it has been loaded
-		if self.processor is not None:
-			del self.processor
-			self.processor = None
-		
-		if self.model is not None:
-			del self.model
-			self.model = None  
-		
-	def process_audio_chunk(self, input_path, target_language, chunk_idx, output_path):
-		try:
-			self.load_model()
-			
-			# Load input audio file using librosa
-			input_waveform, input_sampling_rate = librosa.load(input_path, sr=None, mono=True)
-
-			# Convert NumPy array to PyTorch tensor if needed
-			if not isinstance(input_waveform, torch.Tensor):
-				input_waveform = torch.tensor(input_waveform)
-			
-			forced_decoder_ids = self.processor.get_decoder_prompt_ids(language=target_language, task="translate")
-			
-			# Ensure the input audio has a proper frame rate
-			if input_sampling_rate != 16000:
-				resampler = torchaudio.transforms.Resample(orig_freq=input_sampling_rate, new_freq=16000)
-				input_waveform = resampler(input_waveform)
-		
-			# Process the input audio with the processor
-			input_features = self.processor(input_waveform.numpy(), sampling_rate=16000, return_tensors="pt")
-
-			# Generate token ids
-			predicted_ids = self.model.generate(input_features["input_features"], forced_decoder_ids=forced_decoder_ids)
-
-			# Decode token ids to text
-			transcription = self.processor.batch_decode(predicted_ids, skip_special_tokens=True)[0]
-			
-			#fix a bug: Text Validation check if we have duplicate successive words
-			words = transcription.split()
-			cleaned_words = [words[0]]
-
-			for word in words[1:]:
-				if word != cleaned_words[-1]:
-					cleaned_words.append(word)
-
-			cleaned_str = ' '.join(cleaned_words)
-			transcription = cleaned_str
-
-			Translation_chunk_output_path = f"{output_path}_Translation_chunk{chunk_idx + 1}.mp3"
-			
-			# Use SpeechRecognizer for translation (modify as needed)
-			if target_language != "en":
-				translator = SentenceTranslator(src="en", dst=target_language)
-				translated_text = translator(transcription)
-
-				# Generate final audio output from translated text
-				self.generate_audio(translated_text, Translation_chunk_output_path, target_language)
-				logging.info(f"Processing successful. Translated text: {translated_text}")
-				return translated_text
-			else:
-				self.generate_audio(transcription, Translation_chunk_output_path, target_language)
-				logging.info(f"Processing successful. Translated text: {transcription}")
-				return transcription
-
-			# Log success
-			logging.info(f"Translation successful for {input_path}. Translated text: {transcription}")
-
-		except Exception as e:
-			# Log errors
-			logging.error(f"Error processing audio: {e}")
-			raise  # Re-raise the exception
-		
-		finally:
-			# Ensure model is unloaded and memory is cleared even if an exception occurs
-			self.unload_model()	   
-
-	def generate_audio(self, text, output_path, target_language):
-		tts = gTTS(text, lang=target_language, slow=False)
-		tts.save(output_path)
-
-	def play_audio(self, audio_path): # disabled for now
-		pygame.mixer.init()
-		pygame.mixer.music.load(audio_path)
-		pygame.mixer.music.play()
-
-	def stop_audio(self):
-		if not pygame.mixer.get_init():
-			pygame.mixer.init()
-		try:	
-			pygame.mixer.music.stop()
-		except:
-			pass		
 
 class TranslatorGUI:
 	def __init__(self, master):
-		master.iconbitmap("Flag.ico")
 		self.menubar = CTkMenuBar(master=master)
 		self.file = self.menubar.add_cascade("File")
 		self.help = self.menubar.add_cascade("Help")
@@ -308,7 +38,7 @@ class TranslatorGUI:
 		filedropdown.add_option(option="Convert Audio file to MP3", command=self.Convert_Audio_Files)
 		filedropdown.add_option(option="Extract audio from Video", command=self.extract_audio)
 		filedropdown.add_option(option="Youtube Downloader", command=YouTubeDownloader)
-		filedropdown.add_option(option="Replace Audio in Video", command=run_external_script)
+		filedropdown.add_option(option="Replace Audio in Video", command=AudioReplacerGUI)
 		filedropdown.add_option(option="Exit", command=master.destroy)
 
 		helpdropdown = CustomDropdownMenu(widget=self.help, width=50)
@@ -321,16 +51,6 @@ class TranslatorGUI:
 
 		self.label = customtkinter.CTkLabel(master=master, text="Audio File Translator - S2ST", font=("Arial", 18, "bold"),text_color="red")
 		self.label.pack(side="top", pady=10)
-
-		try:
-			banner_image = Image.open("Flag.png")
-			banner_image = banner_image.resize((200, 100))
-			banner_photo = ImageTk.PhotoImage(banner_image)
-			banner_label = Label(master, image=banner_photo)
-			banner_label.image = banner_photo
-			banner_label.pack(side="top", pady=2)
-		except:
-			pass
 
 		# Create a frame for widgets using pack
 		pack_frame = Frame(master, bg="#222121")
@@ -457,7 +177,7 @@ class TranslatorGUI:
 			Start(Input_file_path)
 	
 	def show_about(self):
-		messagebox.showinfo("About", "Audio File Translator - S2ST v2.0\n\nCreated by Wael Sahli\n\nSpecial Thanks TO: 7gxycn08 for GUI updates")
+		messagebox.showinfo("About", "Audio File Translator - S2ST v2.1\n\nCreated by Wael Sahli\n\n")
 	
 	def browse(self):
 		file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.mp3")])
@@ -620,12 +340,6 @@ class TranslatorGUI:
 
 			else:
 				print("Save operation cancelled.")
-	
-# Main function to run the GUI
-def run_gui():
-	root = customtkinter.CTk()
-	app = TranslatorGUI(root)
-	root.mainloop()
 
 if __name__ == "__main__":
-	run_gui()
+    run_gui()

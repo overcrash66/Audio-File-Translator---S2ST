@@ -1,4 +1,4 @@
-# Audio file translator - Speech To Speech Translator
+# Audio file translator - Speech To Speech and Speech to text Translator - Online mode (No api keys are needed )
 
 Audio file translator, Speech To Speech Translator is a tool that allows you to translate the content of an Audio file using:
  - S2T: OpenAI's Whisper multilingual [whisper-large-v2](https://huggingface.co/openai/whisper-large-v2),
@@ -53,15 +53,19 @@ Audio file translator, Speech To Speech Translator is a tool that allows you to 
   - V2.0:- Fix Arabic translated text to be shown from right to left on textBox.
          - Fix Save to text file arabic translated text to be shown from right to left.
          - Fix a bug of duplicate successive words for English language.
+  -V2.1:- Improve code readability.  
+        - Add load model to GPU if available.  
+        - Minor GUI updates.
+        - Created Distribution Packages (for Windows, Linux).
+        - Remove portable version.
 
 ## Requirements
 
 Make sure you have the following dependencies installed:
 
-- Python 3.x
+- Python >= 3.10
 - Pip (Python package installer)
-- [FFmpeg](https://ffmpeg.org/download.html)
-- [CTkMenuBar](https://github.com/Akascape/CTkMenuBar/archive/refs/heads/main.zip) #Need to install it manually In venv.
+- [FFmpeg](https://ffmpeg.org/download.html) #Should be installed manually 
 
 
 ## Dependencies
@@ -84,7 +88,12 @@ Make sure you have the following dependencies installed:
 git clone https://github.com/overcrash66/Audio-File-Translator---S2ST.git
 ```
 
-2- Create a vitrual env:
+2- Navigate to folder:
+```
+cd Audio-File-Translator---S2ST
+```
+
+3- Create a vitrual env:
 
 ```
 py -3.10 -m venv venv
@@ -94,17 +103,19 @@ py -3.10 -m venv venv
 venv\Scripts\activate
 ```
 
-3- Install the required Python packages using:
+4- Install the required Python packages using:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-4- Run the Script:
+5- Run the Script:
 
 ```bash
-python AudioFileTranslator-S2ST.py
+python audio_file_translator.py
 ```
+
+## Options:
 
 1- File Menu:
 - Convert Audio file to MP3
@@ -128,14 +139,13 @@ python AudioFileTranslator-S2ST.py
 6- Stop Playing Translated File:
 - Click the "Stop Playing Translated File" button to stop audio playback.
 
+## Distribution Packages:
+
+- Pre-built distribution Packages for Windows and Linux are available in dist folder.
 
 ## GUI Preview
 
 ![Redesigned (Custom)](Screenshot2.png)
-
-## Demo Video with installation steps:
-
-[![Watch the video](https://img.youtube.com/vi/4xMDHoUazjc/0.jpg)](https://www.youtube.com/watch?v=4xMDHoUazjc)
 
 ## Configuration
 

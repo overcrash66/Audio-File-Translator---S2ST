@@ -8,3 +8,4 @@ pytube
 librosa
 customtkinter
 httpx
+CTkMenuBar

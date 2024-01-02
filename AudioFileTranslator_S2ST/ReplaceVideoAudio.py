@@ -7,34 +7,7 @@ class AudioReplacerGUI:
 	def change_text_color(self, btn):
 		new_color = 'green'
 		btn.configure(fg_color=new_color)
-			
-	def __init__(self, master):	
-		self.master = master
-		master.title("Audio Replacer")
-		master.geometry("300x220")
-		master.minsize(300,220)
-		master.maxsize(300,240)
-		master.attributes('-fullscreen', False)
-		self.video_path = None
-		self.audio_path = None
-		self.output_path = None
 
-		self.label = customtkinter.CTkLabel(master, text="Select Video, Audio, and Output Paths:", font=("Arial", 12, "bold"),text_color="green")
-		self.label.pack(pady=5)
-
-		self.video_button = customtkinter.CTkButton(master, text="Select Video", command=self.select_video)
-		self.video_button.pack(pady=5)
-
-		self.audio_button = customtkinter.CTkButton(master, text="Select Audio", command= self.select_audio)
-		self.audio_button.pack(pady=5)
-
-		self.output_button = customtkinter.CTkButton(master, text="Select Output", command=self.select_output)
-		self.output_button.pack(pady=5)
-		
-		#Replace Audio
-		self.replace_button = customtkinter.CTkButton(master, text="Run", command=self.replace_audio)
-		self.replace_button.pack(pady=5)
-	
 	def select_video(self):
 		self.change_text_color(self.video_button)
 		self.video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4;*.avi")])
@@ -134,7 +107,35 @@ class AudioReplacerGUI:
 			os.remove("output_speeded_up.mp3")
 			messagebox.showinfo("Info", f"Conversion successful !")
 
+	def __init__(self):
+		new_window = customtkinter.CTk()
+		new_window.title("Audio Replacer")
+		new_window.geometry("300x220")
+		new_window.minsize(300,220)
+		new_window.maxsize(300,240)
+		new_window.attributes('-fullscreen', False)
+		new_window.attributes("-topmost", True)
+		self.video_path = None
+		self.audio_path = None
+		self.output_path = None
+
+		self.label = customtkinter.CTkLabel(new_window, text="Select Video, Audio, and Output Paths:", font=("Arial", 12, "bold"),text_color="green")
+		self.label.pack(pady=5)
+
+		self.video_button = customtkinter.CTkButton(new_window, text="Select Video", command=self.select_video)
+		self.video_button.pack(pady=5)
+
+		self.audio_button = customtkinter.CTkButton(new_window, text="Select Audio", command= self.select_audio)
+		self.audio_button.pack(pady=5)
+
+		self.output_button = customtkinter.CTkButton(new_window, text="Select Output", command=self.select_output)
+		self.output_button.pack(pady=5)
+		
+		#Replace Audio
+		self.replace_button = customtkinter.CTkButton(new_window, text="Run", command=self.replace_audio)
+		self.replace_button.pack(pady=5)
+		new_window.mainloop()	
+
 if __name__ == "__main__":
-	root = Tk()
-	gui = AudioReplacerGUI(root)
-	root.mainloop()
+	gui = self.AudioReplacerGUI()
+	
